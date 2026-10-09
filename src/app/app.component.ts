@@ -2,30 +2,57 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  OnDestroy,
+  OnInit,
   inject
 } from '@angular/core';
-import { MessageService } from 'primeng/api';
+import {
+  HttpErrorResponse
+} from '@angular/common/http';
+import {
+  MessageService
+} from 'primeng/api';
+import {
+  Subject,
+  takeUntil
+} from 'rxjs';
 
-import { datasGlobalI } from './global/interface/data.interface';
+import {
+  datasGlobalI
+} from './global/interface/data.interface';
 import {
   dataTypeE,
-  UIComponentEnum,
-  UIPresentationModeEnum,
-  UIRequestStatusEnum,
-  UISeverityEnum,
-  UIVariantEnum,
-  UIViewModeEnum
+  UIRequestStatusEnum
 } from './global/interface/data.enums';
 import {
-  InputGroupEnum,
-  InputTypeEnum
-} from './global/interface/input-form.enum';
+  ServerRequestActionEnum
+} from './global/interface/server.enum';
+import {
+  ServerRequestMetaInterface
+} from './global/interface/server.interface';
 import {
   UIRequestStateI,
   UISubmitRequestI
 } from './global/interface/ui-runtime.interface';
 
-import { ButtonEventI } from './modules/button/button.component';
+import {
+  app_manipulateData,
+  AppDataAction
+} from './app.functions';
+import {
+  AppService,
+  AppTestDataI
+} from './app.services';
+import {
+  AppSocket
+} from './app.socket';
+import {
+  AppMemory
+} from './app.memory';
+
+import {
+  ButtonEventI
+} from './modules/button/button.component';
 import {
   CommunicationInformationI,
   CommunicationMessageI,
@@ -55,568 +82,151 @@ import {
   ToolbarViewEventI
 } from './modules/toolbar/toolbar.component';
 
-/* ============================================================
- * DONNÉES STATIQUES
- * Les configurations restent hors de AppComponent.
- * AppComponent ne conserve que l’état dynamique et les événements.
- * ============================================================ */
-
-const ACTION_BUTTONS: datasGlobalI[] = [
-  {
-    _id: 'button-create',
-    name: 'Créer',
-    description: 'Créer un utilisateur',
-    dataType: dataTypeE.String,
-    dataKey: 'create',
-    uiComponent: UIComponentEnum.Button,
-    configurations: {
-      icon: 'pi pi-plus',
-      severity: UISeverityEnum.Success,
-      variant: UIVariantEnum.Filled
-    }
-  },
-  {
-    _id: 'button-edit',
-    name: 'Modifier',
-    description: 'Modifier la sélection',
-    dataType: dataTypeE.String,
-    dataKey: 'edit',
-    uiComponent: UIComponentEnum.Button,
-    configurations: {
-      icon: 'pi pi-pencil',
-      severity: UISeverityEnum.Primary,
-      variant: UIVariantEnum.Outlined
-    }
-  },
-  {
-    _id: 'button-delete',
-    name: 'Supprimer',
-    description: 'Supprimer la sélection',
-    dataType: dataTypeE.String,
-    dataKey: 'delete',
-    uiComponent: UIComponentEnum.Button,
-    configurations: {
-      icon: 'pi pi-trash',
-      severity: UISeverityEnum.Danger,
-      variant: UIVariantEnum.Filled
-    }
-  },
-  {
-    _id: 'button-more',
-    name: 'Plus',
-    description: 'Afficher les autres actions',
-    dataType: dataTypeE.String,
-    dataKey: 'more',
-    uiComponent: UIComponentEnum.Button,
-    configurations: {
-      icon: 'pi pi-ellipsis-v',
-      severity: UISeverityEnum.Secondary,
-      variant: UIVariantEnum.Outlined
-    },
-    buttons: [
-      {
-        _id: 'button-view',
-        name: 'Voir',
-        description: 'Afficher les détails',
-        dataType: dataTypeE.String,
-        dataKey: 'view',
-        uiComponent: UIComponentEnum.Button,
-        configurations: {
-          icon: 'pi pi-eye'
-        }
-      },
-      {
-        _id: 'button-duplicate',
-        name: 'Dupliquer',
-        description: 'Dupliquer la ressource',
-        dataType: dataTypeE.String,
-        dataKey: 'duplicate',
-        uiComponent: UIComponentEnum.Button,
-        configurations: {
-          icon: 'pi pi-copy'
-        }
-      },
-      {
-        _id: 'button-export',
-        name: 'Exporter',
-        description: 'Exporter les données',
-        dataType: dataTypeE.String,
-        dataKey: 'export',
-        uiComponent: UIComponentEnum.Button,
-        configurations: {
-          icon: 'pi pi-download'
-        }
-      }
-    ]
-  }
-];
-
-const TOOLBAR_DATA: datasGlobalI = {
-  _id: 'toolbar-users',
-  name: 'Utilisateurs',
-  label: 'Utilisateurs',
-  description: 'Gestion des utilisateurs du système',
+const EMPTY_DATA: datasGlobalI = {
+  _id: '',
+  name: '',
+  description: '',
   dataType: dataTypeE.Mixed,
-  dataKey: 'usersToolbar',
-  uiComponent: UIComponentEnum.Toolbar,
-  controls: {
-    disabled: false,
-    loading: false,
-    showBack: true
-  },
-  configurations: {
-    icon: 'pi pi-users',
-    count: 5,
-    selectedCount: 0
-  },
-  buttons: ACTION_BUTTONS
+  dataKey: ''
 };
 
-const DATA_VIEW: datasGlobalI = {
-  _id: 'data-view-users',
-  name: 'Utilisateurs',
-  label: 'Utilisateurs',
-  description: 'Liste des utilisateurs du système',
-  dataType: dataTypeE.Array,
-  dataKey: 'users',
-  uiComponent: UIComponentEnum.DataView,
-  controls: {
-    disabled: false,
-    loading: false,
-    selectable: true,
-    multiple: false,
-    paginator: true,
-    lazy: false,
-    stripedRows: true,
-    showGridlines: false,
-    resizable: true,
-    reorderable: false
-  },
-  configurations: {
-    viewMode: UIViewModeEnum.Grid,
-    trackBy: '_id',
-    pageSize: 10,
-    pageIndex: 0,
-    totalRecords: 5,
-    rowsPerPageOptions: [10, 25, 50, 100]
-  },
-  columns: [
-    {
-      _id: 'column-name',
-      name: 'Nom',
-      label: 'Nom',
-      description: 'Nom complet',
-      dataType: dataTypeE.String,
-      dataKey: 'name',
-      controls: {
-        hidden: false,
-        sortable: true
-      },
-      configurations: {
-        icon: 'pi pi-user'
-      }
-    },
-    {
-      _id: 'column-email',
-      name: 'Email',
-      label: 'Email',
-      description: 'Adresse email',
-      dataType: dataTypeE.String,
-      dataKey: 'email',
-      controls: {
-        hidden: false,
-        sortable: true
-      },
-      configurations: {
-        icon: 'pi pi-envelope'
-      }
-    },
-    {
-      _id: 'column-status',
-      name: 'Statut',
-      label: 'Statut',
-      description: 'Statut utilisateur',
-      dataType: dataTypeE.String,
-      dataKey: 'status',
-      controls: {
-        hidden: false,
-        sortable: true
-      }
-    },
-    {
-      _id: 'column-city',
-      name: 'Ville',
-      label: 'Ville',
-      description: 'Ville de résidence',
-      dataType: dataTypeE.String,
-      dataKey: 'address.city',
-      controls: {
-        hidden: false,
-        sortable: false
-      },
-      configurations: {
-        icon: 'pi pi-map-marker'
-      }
-    }
-  ],
-  resources: [
-    {
-      _id: 'user-001',
-      name: 'Jean Kabungulu',
-      email: 'jean@peka.com',
-      status: 'Actif',
-      address: {
-        city: 'Bukavu',
-        country: 'RDC'
-      }
-    },
-    {
-      _id: 'user-002',
-      name: 'Paul Mbuyi',
-      email: 'paul@peka.com',
-      status: 'Inactif',
-      address: {
-        city: 'Goma',
-        country: 'RDC'
-      }
-    },
-    {
-      _id: 'user-003',
-      name: 'Grace Mwamba',
-      email: 'grace@peka.com',
-      status: 'Actif',
-      address: {
-        city: 'Butembo',
-        country: 'RDC'
-      }
-    },
-    {
-      _id: 'user-004',
-      name: 'Daniel Kasongo',
-      email: 'daniel@peka.com',
-      status: 'Bloqué',
-      address: {
-        city: 'Kinshasa',
-        country: 'RDC'
-      }
-    },
-    {
-      _id: 'user-005',
-      name: 'Sarah Bahati',
-      email: 'sarah@peka.com',
-      status: 'Actif',
-      address: {
-        city: 'Bukavu',
-        country: 'RDC'
-      }
-    }
-  ],
-  buttons: ACTION_BUTTONS
-};
-
-const SIDEBAR_DATA: readonly SidebarItemI[] = [
-  {
-    id: 'dashboard',
-    label: 'Tableau de bord',
-    description: 'Vue générale du système',
-    icon: 'pi pi-home',
-    accent: 'blue'
-  },
-  {
-    id: 'management',
-    label: 'Gestion',
-    description: 'Gestion des ressources',
-    icon: 'pi pi-objects-column',
-    accent: 'cyan',
-    children: [
-      {
-        id: 'users',
-        label: 'Utilisateurs',
-        description: 'Gestion des utilisateurs',
-        icon: 'pi pi-users',
-        badge: 245,
-        accent: 'cyan'
-      },
-      {
-        id: 'organizations',
-        label: 'Organisations',
-        description: 'Gestion des organisations',
-        icon: 'pi pi-building',
-        badge: 12,
-        accent: 'violet'
-      },
-      {
-        id: 'roles',
-        label: 'Rôles et permissions',
-        description: 'Gestion des autorisations',
-        icon: 'pi pi-shield',
-        accent: 'green'
-      }
-    ]
-  },
-  {
-    id: 'database',
-    label: 'Données',
-    description: 'Modèles et ressources',
-    icon: 'pi pi-database',
-    accent: 'violet',
-    children: [
-      {
-        id: 'models',
-        label: 'Modèles',
-        icon: 'pi pi-box',
-        badge: 8,
-        accent: 'violet'
-      },
-      {
-        id: 'keys',
-        label: 'Clés',
-        icon: 'pi pi-key',
-        badge: 42,
-        accent: 'amber'
-      }
-    ]
-  },
-  {
-    id: 'devices',
-    label: 'Appareils',
-    description: 'Équipements connectés',
-    icon: 'pi pi-microchip',
-    badge: 18,
-    accent: 'green'
-  },
-  {
-    id: 'reports',
-    label: 'Rapports',
-    description: 'Rapports et exports',
-    icon: 'pi pi-chart-bar',
-    accent: 'amber'
-  },
-  {
-    id: 'settings',
-    label: 'Paramètres',
-    description: 'Configuration du système',
-    icon: 'pi pi-cog',
-    accent: 'blue'
-  }
-];
-
-const CREATE_USER_MODAL: datasGlobalI = {
-  _id: 'create-user-modal',
-  name: 'Créer un utilisateur',
-  label: 'Nouvel utilisateur',
-  description: 'Renseignez les informations du nouvel utilisateur.',
-  dataType: dataTypeE.Object,
-  dataKey: 'createUser',
-  uiComponent: UIComponentEnum.Form,
-  controls: {
-    closable: true,
-    closeOnEscape: true,
-    dismissibleMask: false,
-    lockWhileSubmitting: true,
-    waitForServerResponse: true,
-    closeOnSuccess: true,
-    confirmPassword: true,
-    showFeedback: true
-  },
-  configurations: {
-    presentationMode: UIPresentationModeEnum.Modal,
-    modalTitle: 'Créer un utilisateur',
-    modalWidth: '38rem'
-  },
-  inputs: [
-    {
-      _id: 'create-user-name',
-      name: 'Nom',
-      label: 'Nom complet',
-      description: 'Nom complet de l’utilisateur',
-      dataType: dataTypeE.String,
-      dataKey: 'name',
-      uiComponent: UIComponentEnum.Input,
-      inputGroup: InputGroupEnum.Simple,
-      inputType: InputTypeEnum.Text,
-      controls: {
-        required: [true, 'Le nom est obligatoire'],
-        trim: true,
-        autoFocus: true
-      },
-      limits: {
-        minLength: [2, 'Minimum 2 caractères'],
-        maxLength: [120, 'Maximum 120 caractères']
-      },
-      configurations: {
-        icon: 'pi pi-user',
-        placeholder: 'Nom complet'
-      }
-    },
-    {
-      _id: 'create-user-email',
-      name: 'Email',
-      label: 'Adresse email',
-      description: 'Adresse email de connexion',
-      dataType: dataTypeE.String,
-      dataKey: 'email',
-      uiComponent: UIComponentEnum.Input,
-      inputGroup: InputGroupEnum.Simple,
-      inputType: InputTypeEnum.Text,
-      controls: {
-        required: [true, 'L’adresse email est obligatoire'],
-        trim: true,
-        lowercase: true
-      },
-      limits: {
-        pattern: '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$'
-      },
-      configurations: {
-        icon: 'pi pi-envelope',
-        placeholder: 'utilisateur@peka.com',
-        autoComplete: 'email'
-      }
-    },
-    {
-      _id: 'create-user-password',
-      name: 'Mot de passe',
-      label: 'Mot de passe',
-      description: 'Mot de passe initial de l’utilisateur',
-      dataType: dataTypeE.String,
-      dataKey: 'password',
-      uiComponent: UIComponentEnum.Input,
-      inputGroup: InputGroupEnum.Simple,
-      inputType: InputTypeEnum.Password,
-      controls: {
-        required: [true, 'Le mot de passe est obligatoire'],
-        feedback: true,
-        toggleMask: true
-      },
-      limits: {
-        minLength: [8, 'Minimum 8 caractères'],
-        maxLength: [120, 'Maximum 120 caractères']
-      },
-      configurations: {
-        icon: 'pi pi-lock',
-        placeholder: 'Mot de passe',
-        autoComplete: 'new-password'
-      }
-    }
-  ]
-};
-
-const CURRENT_PROFILE: SidebarProfileI = {
-  id: 'current-user',
-  name: 'Jean Peka',
-  subtitle: 'Administrateur',
+const EMPTY_PROFILE: SidebarProfileI = {
+  id: '',
+  name: '',
+  subtitle: '',
   imageUrl: '',
-  status: 'online'
+  status: 'offline'
 };
-
-const INITIAL_MESSAGES: CommunicationMessageI[] = [
-  {
-    id: 'message-1',
-    sender: {
-      id: 'user-2',
-      name: 'Paul Mbuyi'
-    },
-    content: 'Bonjour, le rapport est disponible.',
-    createdAt: new Date(),
-    read: false
-  },
-  {
-    id: 'message-2',
-    sender: {
-      id: CURRENT_PROFILE.id,
-      name: CURRENT_PROFILE.name
-    },
-    content: 'Merci, je vais le vérifier.',
-    createdAt: new Date(),
-    read: true,
-    mine: true
-  }
-];
-
-const INITIAL_NOTIFICATIONS: CommunicationNotificationI[] = [
-  {
-    id: 'notification-1',
-    title: 'Nouvel utilisateur',
-    message: 'Un nouvel utilisateur a été créé.',
-    createdAt: new Date(),
-    icon: 'pi pi-user-plus',
-    severity: 'success',
-    read: false
-  },
-  {
-    id: 'notification-2',
-    title: 'Connexion',
-    message: 'Une nouvelle connexion a été détectée.',
-    createdAt: new Date(),
-    icon: 'pi pi-shield',
-    severity: 'warning',
-    read: false
-  }
-];
-
-const INFORMATION: CommunicationInformationI[] = [
-  {
-    id: 'information-1',
-    title: 'Peka Universal System',
-    message: 'Tous les services sont opérationnels.',
-    createdAt: new Date(),
-    icon: 'pi pi-check-circle'
-  }
-];
-
-/* ============================================================
- * COMPOSANT RACINE
- * ============================================================ */
 
 @Component({
   selector: 'pus-root',
   standalone: false,
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
-  providers: [MessageService],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  providers: [
+    MessageService
+  ],
+  changeDetection:
+    ChangeDetectionStrategy.OnPush
 })
-export class AppComponent {
-  private readonly messageService = inject(MessageService);
-  private readonly changeDetector = inject(ChangeDetectorRef);
+export class AppComponent
+implements OnInit, OnDestroy {
+  private readonly messageService =
+    inject(MessageService);
 
-  /* Configuration statique */
+  private readonly changeDetector =
+    inject(ChangeDetectorRef);
 
-  readonly actionButtons = ACTION_BUTTONS;
-  readonly toolbarData = TOOLBAR_DATA;
-  readonly dataView = DATA_VIEW;
-  readonly sidebarData = SIDEBAR_DATA;
-  readonly createUserModal = CREATE_USER_MODAL;
-  readonly currentProfile = CURRENT_PROFILE;
-  readonly information = INFORMATION;
+  private readonly appService =
+    inject(AppService);
 
-  activeSidebarId = 'users';
-  createUserVisible = false;
+  private readonly appSocket =
+    inject(AppSocket);
 
-  createUserRequestState: UIRequestStateI = {
-    status: UIRequestStatusEnum.Idle
+  private readonly appMemory =
+    inject(AppMemory);
+
+  private readonly destroy$ =
+    new Subject<void>();
+
+  private socketBound = false;
+
+  /* ==========================================================
+   * CONFIGURATION CHARGÉE DEPUIS app.test.json
+   * ========================================================== */
+
+  actionButtons: datasGlobalI[] = [];
+
+  toolbarData: datasGlobalI = {
+    ...EMPTY_DATA,
+    _id: 'toolbar-loading',
+    name: 'Chargement',
+    dataKey: 'toolbarLoading'
   };
 
-  /* État du centre de communication */
+  dataView: datasGlobalI = {
+    ...EMPTY_DATA,
+    _id: 'data-view-loading',
+    name: 'Chargement',
+    dataKey: 'dataViewLoading',
+    resources: []
+  };
+
+  sidebarData: SidebarItemI[] = [];
+
+  createUserModal: datasGlobalI = {
+    ...EMPTY_DATA,
+    _id: 'create-user-loading',
+    name: 'Créer un utilisateur',
+    dataKey: 'createUser'
+  };
+
+  currentProfile: SidebarProfileI = {
+    ...EMPTY_PROFILE
+  };
+
+  information:
+    CommunicationInformationI[] = [];
+
+  /* ==========================================================
+   * ÉTAT DE L’APPLICATION
+   * ========================================================== */
+
+  applicationLoading = true;
+  activeSidebarId = 'users';
+
+  selectedResources: DataResource[] = [];
+
+  /* ==========================================================
+   * MODAL
+   * ========================================================== */
+
+  createUserVisible = false;
+
+  createUserRequestState:
+    UIRequestStateI = {
+      status: UIRequestStatusEnum.Idle
+    };
+
+  /* ==========================================================
+   * COMMUNICATION
+   * ========================================================== */
 
   communicationVisible = false;
   communicationSending = false;
 
-  communicationSection: CommunicationSection = 'messages';
+  communicationSection:
+    CommunicationSection = 'messages';
 
-  messages: CommunicationMessageI[] = [
-    ...INITIAL_MESSAGES
-  ];
+  messages:
+    CommunicationMessageI[] = [];
 
-  notifications: CommunicationNotificationI[] = [
-    ...INITIAL_NOTIFICATIONS
-  ];
+  notifications:
+    CommunicationNotificationI[] = [];
 
-  /* État du panneau de détails */
+  /* ==========================================================
+   * DETAILS
+   * ========================================================== */
 
   detailsVisible = false;
 
-  selectedDetails: Record<string, unknown> | null = null;
+  selectedDetails:
+    Record<string, unknown> | null = null;
+
+  /* ==========================================================
+   * CYCLE DE VIE
+   * ========================================================== */
+
+  ngOnInit(): void {
+    void this.app_initializeF();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+
+    this.appSocket.disconnect();
+  }
 
   /* ==========================================================
    * VALEURS CALCULÉES
@@ -630,24 +240,584 @@ export class AppComponent {
 
   get unreadNotifications(): number {
     return this.notifications.filter(
-      notification => notification.read !== true
+      notification =>
+        notification.read !== true
     ).length;
   }
 
   /* ==========================================================
-   * ÉVÉNEMENTS APPLICATION
+   * INITIALISATION
    * ========================================================== */
 
-  app_mobileMenuClickE(): void {
-    this.app_toast(
-      'info',
-      'Navigation',
-      'Menu mobile ouvert'
+  private async app_initializeF():
+    Promise<void> {
+    try {
+      const cached =
+        await this.appMemory.get<AppTestDataI>(
+          'app-initial-data',
+          {
+            storage: 'indexedDB'
+          }
+        );
+
+      if (cached) {
+        this.app_applyDataF(cached);
+      }
+    } catch {
+      /*
+       * L’échec du cache ne doit jamais empêcher
+       * le chargement HTTP.
+       */
+    }
+
+    this.app_loadDataHttpF();
+  }
+
+  private app_loadDataHttpF(): void {
+    this.applicationLoading = true;
+
+    this.appService
+      .loadTestData()
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: data => {
+          this.app_applyDataF(data);
+
+          void this.appMemory.set(
+            'app-initial-data',
+            data,
+            {
+              storage: 'indexedDB',
+              expiresIn:
+                24 * 60 * 60 * 1000
+            }
+          );
+        },
+        error: error => {
+          this.applicationLoading = false;
+
+          this.app_toastF(
+            'error',
+            'Configuration',
+            this.app_httpErrorF(
+              error,
+              'Impossible de charger app.test.json.'
+            )
+          );
+
+          this.changeDetector
+            .markForCheck();
+        }
+      });
+  }
+
+  private app_applyDataF(
+    data: AppTestDataI
+  ): void {
+    this.actionButtons =
+      [...data.actionButtons];
+
+    this.toolbarData = {
+      ...data.toolbarData
+    };
+
+    this.dataView = {
+      ...data.dataView,
+      resources: [
+        ...(data.dataView.resources ?? [])
+      ]
+    };
+
+    this.sidebarData = [
+      ...data.sidebarData
+    ];
+
+    this.createUserModal = {
+      ...data.createUserModal
+    };
+
+    this.currentProfile = {
+      ...data.currentProfile
+    };
+
+    this.messages = [
+      ...data.messages
+    ];
+
+    this.notifications = [
+      ...data.alerts,
+      ...data.notifications
+    ];
+
+    this.information = [
+      ...data.information
+    ];
+
+    this.activeSidebarId =
+      data.initialState.activeSidebarId;
+
+    this.createUserVisible =
+      data.initialState.createUserVisible;
+
+    this.communicationVisible =
+      data.initialState.communicationVisible;
+
+    this.communicationSending =
+      data.initialState.communicationSending;
+
+    this.communicationSection =
+      data.initialState.communicationSection;
+
+    this.detailsVisible =
+      data.initialState.detailsVisible;
+
+    this.selectedDetails =
+      data.initialState.selectedDetails;
+
+    this.applicationLoading = false;
+
+    this.app_bindSocketF();
+
+    this.changeDetector
+      .markForCheck();
+  }
+
+  /* ==========================================================
+   * SOCKET.IO
+   *
+   * Uniquement :
+   * - messages
+   * - alerts
+   * - notifications
+   * ========================================================== */
+
+  private app_bindSocketF(): void {
+    if (this.socketBound) {
+      return;
+    }
+
+    this.socketBound = true;
+    this.appSocket.connect();
+
+    this.appSocket
+      .listen<CommunicationMessageI>(
+        'messages:created'
+      )
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe(
+        message =>
+          this.socket_messageCreatedE(
+            message
+          )
+      );
+
+    this.appSocket
+      .listen<CommunicationMessageI>(
+        'messages:updated'
+      )
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe(
+        message =>
+          this.socket_messageUpdatedE(
+            message
+          )
+      );
+
+    this.appSocket
+      .listen<CommunicationMessageI>(
+        'messages:deleted'
+      )
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe(
+        message =>
+          this.socket_messageDeletedE(
+            message
+          )
+      );
+
+    this.appSocket
+      .listen<CommunicationNotificationI>(
+        'alerts:created'
+      )
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe(
+        alert =>
+          this.socket_alertCreatedE(
+            alert
+          )
+      );
+
+    this.appSocket
+      .listen<CommunicationNotificationI>(
+        'notifications:created'
+      )
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe(
+        notification =>
+          this.socket_notificationCreatedE(
+            notification
+          )
+      );
+
+    this.appSocket
+      .listen<CommunicationNotificationI>(
+        'notifications:updated'
+      )
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe(
+        notification =>
+          this.socket_notificationUpdatedE(
+            notification
+          )
+      );
+
+    this.appSocket
+      .listen<CommunicationNotificationI>(
+        'notifications:deleted'
+      )
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe(
+        notification =>
+          this.socket_notificationDeletedE(
+            notification
+          )
+      );
+  }
+
+  private socket_messageCreatedE(
+    message: CommunicationMessageI
+  ): void {
+    const result = app_manipulateData(
+      ServerRequestActionEnum.Create,
+      this.messages,
+      message,
+      {
+        key: 'id'
+      }
+    );
+
+    if (!result.success) {
+      return;
+    }
+
+    this.messages = result.current;
+
+    this.app_saveMessagesF();
+
+    this.changeDetector
+      .markForCheck();
+  }
+
+  private socket_messageUpdatedE(
+    message: CommunicationMessageI
+  ): void {
+    const result = app_manipulateData(
+      ServerRequestActionEnum.Update,
+      this.messages,
+      message,
+      {
+        key: 'id'
+      }
+    );
+
+    if (!result.success) {
+      return;
+    }
+
+    this.messages = result.current;
+
+    this.app_saveMessagesF();
+
+    this.changeDetector
+      .markForCheck();
+  }
+
+  private socket_messageDeletedE(
+    message: CommunicationMessageI
+  ): void {
+    const result = app_manipulateData(
+      ServerRequestActionEnum.Delete,
+      this.messages,
+      message,
+      {
+        key: 'id'
+      }
+    );
+
+    if (!result.success) {
+      return;
+    }
+
+    this.messages = result.current;
+
+    this.app_saveMessagesF();
+
+    this.changeDetector
+      .markForCheck();
+  }
+
+  private socket_alertCreatedE(
+    alert: CommunicationNotificationI
+  ): void {
+    this.socket_notificationCreatedE(
+      alert
+    );
+
+    this.app_toastF(
+      this.app_notificationSeverityF(
+        alert
+      ),
+      alert.title,
+      alert.message
     );
   }
 
-  private app_toast(
-    severity: 'success' | 'info' | 'warn' | 'error',
+  private socket_notificationCreatedE(
+    notification:
+      CommunicationNotificationI
+  ): void {
+    const result = app_manipulateData(
+      ServerRequestActionEnum.Create,
+      this.notifications,
+      notification,
+      {
+        key: 'id'
+      }
+    );
+
+    if (!result.success) {
+      return;
+    }
+
+    this.notifications = [
+      ...result.current
+    ].sort(
+      (left, right) =>
+        new Date(right.createdAt)
+          .getTime() -
+        new Date(left.createdAt)
+          .getTime()
+    );
+
+    this.app_saveNotificationsF();
+
+    this.changeDetector
+      .markForCheck();
+  }
+
+  private socket_notificationUpdatedE(
+    notification:
+      CommunicationNotificationI
+  ): void {
+    const result = app_manipulateData(
+      ServerRequestActionEnum.Update,
+      this.notifications,
+      notification,
+      {
+        key: 'id'
+      }
+    );
+
+    if (!result.success) {
+      return;
+    }
+
+    this.notifications = result.current;
+
+    this.app_saveNotificationsF();
+
+    this.changeDetector
+      .markForCheck();
+  }
+
+  private socket_notificationDeletedE(
+    notification:
+      CommunicationNotificationI
+  ): void {
+    const result = app_manipulateData(
+      ServerRequestActionEnum.Delete,
+      this.notifications,
+      notification,
+      {
+        key: 'id'
+      }
+    );
+
+    if (!result.success) {
+      return;
+    }
+
+    this.notifications = result.current;
+
+    this.app_saveNotificationsF();
+
+    this.changeDetector
+      .markForCheck();
+  }
+
+  /* ==========================================================
+   * MÉMOIRE DU NAVIGATEUR
+   * ========================================================== */
+
+  private app_saveMessagesF(): void {
+    void this.appMemory.set(
+      'messages',
+      this.messages,
+      {
+        storage: 'indexedDB'
+      }
+    );
+  }
+
+  private app_saveNotificationsF(): void {
+    void this.appMemory.set(
+      'notifications',
+      this.notifications,
+      {
+        storage: 'indexedDB'
+      }
+    );
+  }
+
+  private app_saveDataViewF(): void {
+    void this.appMemory.set(
+      `data-view:${this.dataView.dataKey}`,
+      this.dataView.resources ?? [],
+      {
+        storage: 'indexedDB',
+        expiresIn:
+          30 * 60 * 1000
+      }
+    );
+  }
+
+  /* ==========================================================
+   * HTTP : CHARGEMENT DES DONNÉES MÉTIER
+   * ========================================================== */
+
+  private dataView_loadHttpF(
+    meta?: ServerRequestMetaInterface
+  ): void {
+    const resource =
+      this.dataView.dataKey;
+
+    if (!resource) {
+      return;
+    }
+
+    this.dataView = {
+      ...this.dataView,
+      controls: {
+        ...this.dataView.controls,
+        loading: true
+      }
+    };
+
+    this.appService
+      .send<
+        Record<string, unknown>,
+        Record<string, unknown>
+      >(
+        resource,
+        resource,
+        ServerRequestActionEnum.FindAll,
+        undefined,
+        meta
+      )
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: response => {
+          this.dataView = {
+            ...this.dataView,
+            controls: {
+              ...this.dataView.controls,
+              loading: false
+            },
+            resources: [
+              ...(response.datas ?? [])
+            ],
+            configurations: {
+              ...this.dataView.configurations,
+              pageIndex:
+                response.meta?.page !== undefined
+                  ? response.meta.page - 1
+                  : this.dataView.configurations
+                    ?.pageIndex,
+              pageSize:
+                response.meta?.limit ??
+                this.dataView.configurations
+                  ?.pageSize,
+              totalRecords:
+                response.meta?.total ??
+                response.datas?.length ??
+                0
+            }
+          };
+
+          this.app_saveDataViewF();
+
+          this.changeDetector
+            .markForCheck();
+        },
+        error: error => {
+          this.dataView = {
+            ...this.dataView,
+            controls: {
+              ...this.dataView.controls,
+              loading: false
+            }
+          };
+
+          this.app_toastF(
+            'error',
+            'Chargement impossible',
+            this.app_httpErrorF(
+              error,
+              'Impossible de récupérer les données.'
+            )
+          );
+
+          this.changeDetector
+            .markForCheck();
+        }
+      });
+  }
+
+  /* ==========================================================
+   * APPLICATION
+   * ========================================================== */
+
+  app_mobileMenuClickE(): void {
+    /*
+     * L’ouverture visuelle est gérée
+     * par SidebarComponent.
+     */
+  }
+
+  private app_toastF(
+    severity:
+      | 'success'
+      | 'info'
+      | 'warn'
+      | 'error',
     summary: string,
     detail: string
   ): void {
@@ -659,20 +829,80 @@ export class AppComponent {
     });
   }
 
+  private app_httpErrorF(
+    error: unknown,
+    fallback: string
+  ): string {
+    if (
+      error instanceof HttpErrorResponse
+    ) {
+      const serverMessage =
+        typeof error.error === 'object' &&
+        error.error !== null &&
+        'message' in error.error
+          ? String(error.error.message)
+          : '';
+
+      return (
+        serverMessage ||
+        error.message ||
+        fallback
+      );
+    }
+
+    if (error instanceof Error) {
+      return error.message;
+    }
+
+    return fallback;
+  }
+
+  private app_notificationSeverityF(
+    notification:
+      CommunicationNotificationI
+  ):
+    | 'success'
+    | 'info'
+    | 'warn'
+    | 'error' {
+    switch (notification.severity) {
+      case 'success':
+        return 'success';
+
+      case 'warning':
+        return 'warn';
+
+      case 'error':
+        return 'error';
+
+      default:
+        return 'info';
+    }
+  }
+
   /* ==========================================================
-   * ÉVÉNEMENTS SIDEBAR
+   * SIDEBAR
    * ========================================================== */
 
   sidebar_itemClickE(
     event: SidebarNavigationEventI
   ): void {
-    this.activeSidebarId = event.item.id;
+    this.activeSidebarId =
+      event.item.id;
 
-    this.app_toast(
-      'info',
-      'Navigation',
-      event.item.label
-    );
+    if (
+      event.item.id === 'users' ||
+      event.item.id === 'models' ||
+      event.item.id === 'keys' ||
+      event.item.id === 'devices'
+    ) {
+      this.dataView_loadHttpF({
+        page: 1,
+        limit:
+          this.dataView.configurations
+            ?.pageSize ?? 10
+      });
+    }
   }
 
   sidebar_profileClickE(
@@ -693,21 +923,21 @@ export class AppComponent {
   sidebar_collapsedChangeE(
     collapsed: boolean
   ): void {
-    this.app_toast(
-      'info',
-      'Menu',
-      collapsed
-        ? 'Menu réduit'
-        : 'Menu développé'
+    void this.appMemory.set(
+      'sidebar-collapsed',
+      collapsed,
+      {
+        storage: 'local'
+      }
     );
   }
 
   /* ==========================================================
-   * ÉVÉNEMENTS TOOLBAR
+   * TOOLBAR
    * ========================================================== */
 
   toolbar_backClickE(): void {
-    this.app_toast(
+    this.app_toastF(
       'info',
       'Navigation',
       'Retour demandé'
@@ -720,53 +950,41 @@ export class AppComponent {
     switch (event.button.dataKey) {
       case 'create':
         this.createUserVisible = true;
+
         this.createUserRequestState = {
           status: UIRequestStatusEnum.Idle
         };
         return;
 
       case 'edit':
-        this.app_toast(
-          'info',
-          'Modification',
-          'Sélectionnez une ressource à modifier'
-        );
+        if (
+          this.selectedResources.length !== 1
+        ) {
+          this.app_toastF(
+            'warn',
+            'Modification',
+            'Sélectionnez une seule ressource.'
+          );
+          return;
+        }
+
+        this.selectedDetails = {
+          ...this.selectedResources[0]
+        };
+
+        this.detailsVisible = true;
         return;
 
       case 'delete':
-        this.app_toast(
-          'warn',
-          'Suppression',
-          'Sélectionnez une ressource à supprimer'
-        );
-        return;
-
-      case 'view':
-        this.app_toast(
-          'info',
-          'Détails',
-          'Affichage des détails demandé'
-        );
-        return;
-
-      case 'duplicate':
-        this.app_toast(
-          'success',
-          'Duplication',
-          'Duplication demandée'
-        );
+        this.dataView_deleteSelectedHttpF();
         return;
 
       case 'export':
-        this.app_toast(
-          'success',
-          'Export',
-          'Export des données demandé'
-        );
+        this.dataView_exportHttpF();
         return;
 
       default:
-        this.app_toast(
+        this.app_toastF(
           'info',
           'Action',
           event.button.name
@@ -777,89 +995,127 @@ export class AppComponent {
   toolbar_searchChangeE(
     event: ToolbarValueEventI
   ): void {
-    if (typeof event.value !== 'string') {
-      return;
-    }
-
-    const search = event.value.trim();
-
-    if (!search) {
-      return;
-    }
+    void this.appMemory.set(
+      'toolbar-search',
+      String(event.value ?? ''),
+      {
+        storage: 'session'
+      }
+    );
   }
 
   toolbar_searchSubmitE(
     event: ToolbarValueEventI
   ): void {
-    const search = String(event.value ?? '').trim();
+    const search =
+      String(event.value ?? '').trim();
 
-    this.app_toast(
-      'info',
-      'Recherche',
-      search
-        ? `Recherche : ${search}`
-        : 'Recherche réinitialisée'
-    );
+    this.dataView_loadHttpF({
+      page: 1,
+      limit:
+        this.dataView.configurations
+          ?.pageSize ?? 10,
+      filters: search
+        ? {
+            search
+          }
+        : {}
+    });
   }
 
   toolbar_filterChangeE(
     event: ToolbarFilterEventI
   ): void {
-    this.app_toast(
-      'info',
-      'Filtre',
-      `${Object.keys(event.values).length} filtre(s) actif(s)`
-    );
+    this.dataView_loadHttpF({
+      page: 1,
+      limit:
+        this.dataView.configurations
+          ?.pageSize ?? 10,
+      filters: event.values
+    });
   }
 
   toolbar_filtersChangeE(
-    filters: Record<string, unknown>
+    filters:
+      Record<string, unknown>
   ): void {
-    this.app_toast(
-      'info',
-      'Filtres',
-      `${Object.keys(filters).length} filtre(s) appliqué(s)`
-    );
+    this.dataView_loadHttpF({
+      page: 1,
+      limit:
+        this.dataView.configurations
+          ?.pageSize ?? 10,
+      filters
+    });
   }
 
   toolbar_sortChangeE(
     event: ToolbarSortEventI
   ): void {
-    this.app_toast(
-      'info',
-      'Tri',
-      `Direction : ${event.direction}`
-    );
+    this.dataView_loadHttpF({
+      page:
+        (
+          this.dataView.configurations
+            ?.pageIndex ?? 0
+        ) + 1,
+      limit:
+        this.dataView.configurations
+          ?.pageSize ?? 10,
+      sort: {
+        [event.data.dataKey]:
+          String(event.direction)
+            .toLowerCase() === 'asc'
+            ? 1
+            : -1
+      }
+    });
   }
 
   toolbar_viewChangeE(
     event: ToolbarViewEventI
   ): void {
-    this.app_toast(
-      'info',
-      'Affichage',
-      `Vue : ${String(event.value)}`
+    this.dataView = {
+      ...this.dataView,
+      configurations: {
+        ...this.dataView.configurations,
+        viewMode:
+          event.value as never
+      }
+    };
+
+    void this.appMemory.set(
+      'data-view-mode',
+      event.value,
+      {
+        storage: 'local'
+      }
     );
   }
 
   toolbar_communicationClickE(
-    event: ToolbarCommunicationEventI
+    event:
+      ToolbarCommunicationEventI
   ): void {
     this.detailsVisible = false;
 
-    this.communicationSection = event.action;
+    this.communicationSection =
+      event.action;
+
     this.communicationVisible = true;
 
     if (event.action === 'messages') {
-      this.messages = this.messages.map(message => ({
-        ...message,
-        read: true
-      }));
+      this.messages = this.messages.map(
+        message => ({
+          ...message,
+          read: true
+        })
+      );
+
+      this.app_saveMessagesF();
     }
   }
 
   /* ==========================================================
-   * ÉVÉNEMENTS DATA VIEW
+   * DATA VIEW
    * ========================================================== */
 
   dataView_rowClickE(
@@ -880,72 +1136,365 @@ export class AppComponent {
     };
 
     this.detailsVisible = true;
-
-    this.app_toast(
-      'info',
-      'Utilisateur',
-      String(event.resource['name'] ?? 'Détails ouverts')
-    );
   }
 
   dataView_selectionChangeE(
     resources: DataResource[]
   ): void {
-    if (resources.length === 0) {
-      return;
-    }
+    this.selectedResources = [
+      ...resources
+    ];
 
-    this.app_toast(
-      'info',
-      'Sélection',
-      `${resources.length} ressource(s) sélectionnée(s)`
-    );
+    this.toolbarData = {
+      ...this.toolbarData,
+      configurations: {
+        ...this.toolbarData.configurations,
+        selectedCount:
+          this.selectedResources.length
+      }
+    };
   }
 
   dataView_pageChangeE(
     event: DataViewEventI
   ): void {
-    this.app_toast(
-      'info',
-      'Pagination',
-      'Page mise à jour'
-    );
+    const pageEvent =
+      event.event as {
+        first?: number;
+        rows?: number;
+      };
+
+    const limit =
+      pageEvent.rows ??
+      this.dataView.configurations
+        ?.pageSize ??
+      10;
+
+    const page =
+      Math.floor(
+        (pageEvent.first ?? 0) /
+        limit
+      ) + 1;
+
+    this.dataView_loadHttpF({
+      page,
+      limit
+    });
   }
 
   dataView_sortChangeE(
     event: DataViewEventI
   ): void {
-    this.app_toast(
-      'info',
-      'Tri des données',
-      'Tri appliqué'
-    );
+    const sortEvent =
+      event.event as {
+        field?: string;
+        order?: number;
+      };
+
+    if (!sortEvent.field) {
+      return;
+    }
+
+    this.dataView_loadHttpF({
+      page: 1,
+      limit:
+        this.dataView.configurations
+          ?.pageSize ?? 10,
+      sort: {
+        [sortEvent.field]:
+          sortEvent.order === -1
+            ? -1
+            : 1
+      }
+    });
   }
 
   dataView_buttonClickE(
     event: DataViewButtonEventI
   ): void {
-    if (event.button.dataKey === 'view') {
-      this.selectedDetails = {
-        ...event.resource
-      };
+    switch (event.button.dataKey) {
+      case 'view':
+        this.selectedDetails = {
+          ...event.resource
+        };
 
-      this.detailsVisible = true;
+        this.detailsVisible = true;
+        return;
+
+      case 'delete':
+        this.selectedResources = [
+          event.resource
+        ];
+
+        this.dataView_deleteSelectedHttpF();
+        return;
+
+      case 'duplicate':
+        this.dataView_duplicateHttpF(
+          event.resource
+        );
+        return;
+
+      default:
+        this.app_toastF(
+          'info',
+          event.button.name,
+          String(
+            event.resource['name'] ??
+            'Action demandée'
+          )
+        );
+    }
+  }
+
+  private dataView_deleteSelectedHttpF():
+    void {
+    if (
+      this.selectedResources.length === 0
+    ) {
+      this.app_toastF(
+        'warn',
+        'Suppression',
+        'Sélectionnez au moins une ressource.'
+      );
       return;
     }
 
-    this.app_toast(
-      'info',
-      event.button.name,
-      String(
-        event.resource['name'] ??
-        'Action exécutée'
+    const resource =
+      this.dataView.dataKey;
+
+    const action =
+      this.selectedResources.length > 1
+        ? ServerRequestActionEnum.DeleteMany
+        : ServerRequestActionEnum.Delete;
+
+    this.appService
+      .send<
+        DataResource,
+        DataResource
+      >(
+        resource,
+        resource,
+        action,
+        this.selectedResources
       )
-    );
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: response => {
+          const deleted =
+            response.datas?.length
+              ? response.datas
+              : this.selectedResources;
+
+          const result =
+            app_manipulateData(
+              action,
+              this.dataView.resources ?? [],
+              deleted,
+              {
+                key: '_id'
+              }
+            );
+
+          if (!result.success) {
+            this.app_toastF(
+              'error',
+              'Suppression',
+              result.error ??
+              'Mise à jour locale impossible.'
+            );
+            return;
+          }
+
+          this.dataView = {
+            ...this.dataView,
+            resources: result.current,
+            configurations: {
+              ...this.dataView.configurations,
+              totalRecords:
+                Math.max(
+                  0,
+                  (
+                    this.dataView
+                      .configurations
+                      ?.totalRecords ??
+                    result.previous.length
+                  ) -
+                  result.difference
+                    .removed.length
+                )
+            }
+          };
+
+          this.selectedResources = [];
+
+          this.app_saveDataViewF();
+
+          this.app_toastF(
+            'success',
+            'Suppression',
+            response.message ??
+            `${result.difference.removed.length} ressource(s) supprimée(s).`
+          );
+
+          this.changeDetector
+            .markForCheck();
+        },
+        error: error => {
+          this.app_toastF(
+            'error',
+            'Suppression impossible',
+            this.app_httpErrorF(
+              error,
+              'Le serveur a refusé la suppression.'
+            )
+          );
+        }
+      });
+  }
+
+  private dataView_duplicateHttpF(
+    source: DataResource
+  ): void {
+    const resource =
+      this.dataView.dataKey;
+
+    this.appService
+      .send<
+        DataResource,
+        DataResource
+      >(
+        resource,
+        resource,
+        ServerRequestActionEnum.Duplicate,
+        [source]
+      )
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: response => {
+          const created =
+            response.datas?.[0];
+
+          if (!created) {
+            this.app_toastF(
+              'error',
+              'Duplication',
+              'Le serveur n’a retourné aucune ressource.'
+            );
+            return;
+          }
+
+ 
+
+
+            const result =
+  app_manipulateData<DataResource>(
+    ServerRequestActionEnum.Create,
+    this.dataView.resources ?? [],
+    created,
+    {
+      key: '_id'
+    }
+  );
+
+
+          if (!result.success) {
+            this.app_toastF(
+              'error',
+              'Duplication',
+              result.error ??
+              'Mise à jour locale impossible.'
+            );
+            return;
+          }
+
+          this.dataView = {
+            ...this.dataView,
+            resources: result.current
+          };
+
+          this.app_saveDataViewF();
+
+          this.app_toastF(
+            'success',
+            'Duplication',
+            response.message ??
+            'Ressource dupliquée.'
+          );
+
+          this.changeDetector
+            .markForCheck();
+        },
+        error: error => {
+          this.app_toastF(
+            'error',
+            'Duplication impossible',
+            this.app_httpErrorF(
+              error,
+              'Le serveur a refusé la duplication.'
+            )
+          );
+        }
+      });
+  }
+
+  private dataView_exportHttpF(): void {
+    const resource =
+      this.dataView.dataKey;
+
+    this.appService
+      .download(
+        resource,
+        resource,
+        ServerRequestActionEnum.Export,
+        this.selectedResources.length
+          ? this.selectedResources
+          : undefined
+      )
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: blob => {
+          const url =
+            URL.createObjectURL(blob);
+
+          const link =
+            document.createElement('a');
+
+          link.href = url;
+          link.download =
+            `${resource}-${Date.now()}.xlsx`;
+
+          link.click();
+
+          URL.revokeObjectURL(url);
+
+          this.app_toastF(
+            'success',
+            'Export',
+            'Le fichier a été téléchargé.'
+          );
+        },
+        error: error => {
+          this.app_toastF(
+            'error',
+            'Export impossible',
+            this.app_httpErrorF(
+              error,
+              'Impossible de télécharger le fichier.'
+            )
+          );
+        }
+      });
   }
 
   /* ==========================================================
-   * ÉVÉNEMENTS MODAL
+   * MODAL
    * ========================================================== */
 
   modal_visibleChangeE(
@@ -953,9 +1502,12 @@ export class AppComponent {
   ): void {
     this.createUserVisible = visible;
 
-    if (!visible &&
-      this.createUserRequestState.status !==
-      UIRequestStatusEnum.Submitting) {
+    if (
+      !visible &&
+      this.createUserRequestState
+        .status !==
+        UIRequestStatusEnum.Submitting
+    ) {
       this.createUserRequestState = {
         status: UIRequestStatusEnum.Idle
       };
@@ -968,11 +1520,9 @@ export class AppComponent {
     this.createUserVisible = false;
 
     if (event.source !== 'success') {
-      this.app_toast(
-        'info',
-        'Formulaire',
-        'Création annulée'
-      );
+      this.createUserRequestState = {
+        status: UIRequestStatusEnum.Idle
+      };
     }
   }
 
@@ -980,84 +1530,157 @@ export class AppComponent {
     event: UISubmitRequestI
   ): void {
     this.createUserRequestState = {
-      status: UIRequestStatusEnum.Submitting,
+      status:
+        UIRequestStatusEnum.Submitting,
       feedback: {
         severity: 'info',
         title: 'Création',
-        message: 'Création de l’utilisateur en cours...'
+        message:
+          'Création de l’utilisateur en cours...'
       }
     };
 
-    /*
-     * Remplacez ce délai par votre appel ServerService.
-     * Exemple :
-     *
-     * this.serverService.send(
-     *   'users',
-     *   'users',
-     *   ServerRequestActionEnum.Create,
-     *   [event.value]
-     * ).subscribe(...)
-     */
+    this.appService
+      .send<
+        Record<string, unknown>,
+        Record<string, unknown>
+      >(
+        'users',
+        'users',
+        ServerRequestActionEnum.Create,
+        [event.value]
+      )
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: response => {
+          const created =
+            response.datas?.[0];
 
-    setTimeout(() => {
-      const createdUser = {
-        _id: `user-${Date.now()}`,
-        ...event.value,
-        status: 'Actif'
-      };
+          if (
+            !response.success ||
+            !created
+          ) {
+            this.createUserRequestState = {
+              status:
+                UIRequestStatusEnum.Error,
+              feedback: {
+                severity: 'error',
+                title:
+                  'Création impossible',
+                message:
+                  response.message ??
+                  'Réponse serveur incomplète.'
+              }
+            };
 
-      this.createUserRequestState = {
-        status: UIRequestStatusEnum.Success,
-        feedback: {
-          severity: 'success',
-          title: 'Utilisateur créé',
-          message: 'Le nouvel utilisateur a été créé.'
-        }
-      };
+            this.changeDetector
+              .markForCheck();
 
-      this.dataView.resources = [
-        ...(this.dataView.resources ?? []),
-        createdUser
-      ];
+            return;
+          }
 
-      if (this.dataView.configurations) {
-        this.dataView.configurations.totalRecords =
-          this.dataView.resources.length;
-      }
+const result =
+  app_manipulateData<DataResource>(
+    ServerRequestActionEnum.Create,
+    this.dataView.resources ?? [],
+    created,
+    {
+      key: '_id'
+    }
+  );
 
-      this.createUserVisible = false;
+          if (!result.success) {
+            this.createUserRequestState = {
+              status:
+                UIRequestStatusEnum.Error,
+              feedback: {
+                severity: 'error',
+                title:
+                  'Création impossible',
+                message:
+                  result.error ??
+                  'Mise à jour locale impossible.'
+              }
+            };
 
-      this.notifications = [
-        {
-          id: `notification-${Date.now()}`,
-          title: 'Nouvel utilisateur',
-          message: `${String(
-            event.value['name'] ?? 'Utilisateur'
-          )} a été créé.`,
-          createdAt: new Date(),
-          icon: 'pi pi-user-plus',
-          severity: 'success',
-          read: false
+            this.changeDetector
+              .markForCheck();
+
+            return;
+          }
+
+          this.dataView = {
+            ...this.dataView,
+            resources: result.current,
+            configurations: {
+              ...this.dataView.configurations,
+              totalRecords:
+                result.current.length
+            }
+          };
+
+          this.createUserRequestState = {
+            status:
+              UIRequestStatusEnum.Success,
+            feedback: {
+              severity: 'success',
+              title: 'Utilisateur créé',
+              message:
+                response.message ??
+                'Le nouvel utilisateur a été créé.'
+            }
+          };
+
+          this.createUserVisible = false;
+
+          this.app_saveDataViewF();
+
+          this.app_toastF(
+            'success',
+            'Utilisateur créé',
+            String(
+              created['name'] ??
+              'Nouvel utilisateur'
+            )
+          );
+
+          this.changeDetector
+            .markForCheck();
         },
-        ...this.notifications
-      ];
+        error: error => {
+          const message =
+            this.app_httpErrorF(
+              error,
+              'Le serveur a refusé la création.'
+            );
 
-      this.app_toast(
-        'success',
-        'Utilisateur créé',
-        String(
-          event.value['name'] ??
-          'Le nouvel utilisateur'
-        )
-      );
+          this.createUserRequestState = {
+            status:
+              UIRequestStatusEnum.Error,
+            feedback: {
+              severity: 'error',
+              title:
+                'Création impossible',
+              message
+            }
+          };
 
-      this.changeDetector.markForCheck();
-    }, 700);
+          this.app_toastF(
+            'error',
+            'Création impossible',
+            message
+          );
+
+          this.changeDetector
+            .markForCheck();
+        }
+      });
   }
 
   /* ==========================================================
-   * ÉVÉNEMENTS COMMUNICATION
+   * COMMUNICATION — SOCKET.IO UNIQUEMENT
    * ========================================================== */
 
   communication_visibleChangeE(
@@ -1075,85 +1698,164 @@ export class AppComponent {
   communication_messageSendE(
     event: CommunicationSendEventI
   ): void {
-    const content = event.content.trim();
+    const content =
+      event.content.trim();
 
-    if (!content || this.communicationSending) {
+    if (
+      !content ||
+      this.communicationSending
+    ) {
       return;
     }
 
     this.communicationSending = true;
 
-    const message: CommunicationMessageI = {
-      id: `message-${Date.now()}`,
-      sender: {
-        id: this.currentProfile.id,
-        name: this.currentProfile.name,
-        imageUrl: this.currentProfile.imageUrl
-      },
-      content,
-      createdAt: new Date(),
-      read: true,
-      mine: true
-    };
+    const message:
+      CommunicationMessageI = {
+        id: `message-${crypto.randomUUID()}`,
+        sender: {
+          id: this.currentProfile.id,
+          name: this.currentProfile.name,
+          imageUrl:
+            this.currentProfile.imageUrl
+        },
+        content,
+        createdAt: new Date(),
+        read: true,
+        mine: true
+      };
 
-    this.messages = [
-      ...this.messages,
+    const result =
+      app_manipulateData(
+        ServerRequestActionEnum.Create,
+        this.messages,
+        message,
+        {
+          key: 'id'
+        }
+      );
+
+    if (!result.success) {
+      this.communicationSending = false;
+
+      this.app_toastF(
+        'error',
+        'Message',
+        result.error ??
+        'Impossible d’ajouter le message.'
+      );
+
+      return;
+    }
+
+    this.messages = result.current;
+
+    this.appSocket.emit(
+      'messages:created',
       message
-    ];
+    );
 
     this.communicationSending = false;
 
-    this.app_toast(
+    this.app_saveMessagesF();
+
+    this.app_toastF(
       'success',
       'Message envoyé',
-      'Votre message apparaît maintenant dans la conversation.'
+      'Votre message a été ajouté à la conversation.'
     );
 
-    this.changeDetector.markForCheck();
+    this.changeDetector
+      .markForCheck();
   }
 
   communication_notificationClickE(
-    notification: CommunicationNotificationI
+    notification:
+      CommunicationNotificationI
   ): void {
-    this.notifications = this.notifications.map(item =>
-      item.id === notification.id
-        ? {
-          ...item,
-          read: true
-        }
-        : item
-    );
+    const updated = {
+      ...notification,
+      read: true
+    };
 
-    this.app_toast(
-      notification.severity === 'error'
-        ? 'error'
-        : notification.severity === 'warning'
-          ? 'warn'
-          : notification.severity ?? 'info',
+    const result =
+      app_manipulateData(
+        ServerRequestActionEnum.Update,
+        this.notifications,
+        updated,
+        {
+          key: 'id'
+        }
+      );
+
+    if (result.success) {
+      this.notifications =
+        result.current;
+
+      this.appSocket.emit(
+        'notifications:read',
+        updated
+      );
+
+      this.app_saveNotificationsF();
+    }
+
+    this.app_toastF(
+      this.app_notificationSeverityF(
+        notification
+      ),
       notification.title,
       notification.message
     );
   }
 
-  communication_markAllNotificationsReadE(): void {
-    const unreadCount = this.unreadNotifications;
+  communication_markAllNotificationsReadE():
+    void {
+    const unread =
+      this.notifications.filter(
+        notification =>
+          notification.read !== true
+      );
 
-    this.notifications = this.notifications.map(item => ({
-      ...item,
-      read: true
-    }));
+    if (unread.length === 0) {
+      this.app_toastF(
+        'info',
+        'Notifications',
+        'Aucune nouvelle notification.'
+      );
+      return;
+    }
 
-    this.app_toast(
+    this.notifications =
+      this.notifications.map(
+        notification => ({
+          ...notification,
+          read: true
+        })
+      );
+
+    this.appSocket.emit(
+      'notifications:read',
+      unread.map(
+        notification =>
+          notification.id
+      )
+    );
+
+    this.app_saveNotificationsF();
+
+    this.app_toastF(
       'success',
       'Notifications',
-      unreadCount > 0
-        ? `${unreadCount} notification(s) marquée(s) comme lue(s)`
-        : 'Aucune nouvelle notification'
+      `${unread.length} notification(s) marquée(s) comme lue(s).`
     );
+
+    this.changeDetector
+      .markForCheck();
   }
 
   /* ==========================================================
-   * ÉVÉNEMENTS DETAILS PANEL
+   * DETAILS
    * ========================================================== */
 
   details_visibleChangeE(
@@ -1171,22 +1873,24 @@ export class AppComponent {
   ): void {
     this.detailsVisible = false;
 
-    this.app_toast(
+    this.app_toastF(
       'info',
       'Modification',
-      `${String(data['name'] ?? 'Ressource')} prête à être modifiée`
+      `${String(
+        data['name'] ?? 'Ressource'
+      )} prête à être modifiée.`
     );
   }
 
   details_deleteClickE(
     data: Record<string, unknown>
   ): void {
-    this.app_toast(
-      'warn',
-      'Suppression',
-      `Suppression demandée pour ${String(
-        data['name'] ?? 'la ressource'
-      )}`
-    );
+    this.selectedResources = [
+      data
+    ];
+
+    this.detailsVisible = false;
+
+    this.dataView_deleteSelectedHttpF();
   }
 }

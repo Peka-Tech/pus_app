@@ -1,0 +1,571 @@
+{
+  "version": 1,
+  "environment": "test",
+  "transport": {
+    "default": "http",
+    "socketResources": [
+      "messages",
+      "alerts",
+      "notifications"
+    ],
+    "httpResources": [
+      "users",
+      "organizations",
+      "roles",
+      "permissions",
+      "models",
+      "keys",
+      "devices",
+      "reports",
+      "settings",
+      "files",
+      "media"
+    ],
+    "upload": "http",
+    "download": "http"
+  },
+  "actionButtons": [
+    {
+      "_id": "button-create",
+      "name": "Créer",
+      "description": "Créer un utilisateur",
+      "dataType": "String",
+      "dataKey": "create",
+      "uiComponent": "Button",
+      "configurations": {
+        "icon": "pi pi-plus",
+        "severity": "Success",
+        "variant": "Filled"
+      }
+    },
+    {
+      "_id": "button-edit",
+      "name": "Modifier",
+      "description": "Modifier la sélection",
+      "dataType": "String",
+      "dataKey": "edit",
+      "uiComponent": "Button",
+      "configurations": {
+        "icon": "pi pi-pencil",
+        "severity": "Primary",
+        "variant": "Outlined"
+      }
+    },
+    {
+      "_id": "button-delete",
+      "name": "Supprimer",
+      "description": "Supprimer la sélection",
+      "dataType": "String",
+      "dataKey": "delete",
+      "uiComponent": "Button",
+      "configurations": {
+        "icon": "pi pi-trash",
+        "severity": "Danger",
+        "variant": "Filled"
+      }
+    },
+    {
+      "_id": "button-more",
+      "name": "Plus",
+      "description": "Afficher les autres actions",
+      "dataType": "String",
+      "dataKey": "more",
+      "uiComponent": "Button",
+      "configurations": {
+        "icon": "pi pi-ellipsis-v",
+        "severity": "Secondary",
+        "variant": "Outlined"
+      },
+      "buttons": [
+        {
+          "_id": "button-view",
+          "name": "Voir",
+          "description": "Afficher les détails",
+          "dataType": "String",
+          "dataKey": "view",
+          "uiComponent": "Button",
+          "configurations": {
+            "icon": "pi pi-eye"
+          }
+        },
+        {
+          "_id": "button-duplicate",
+          "name": "Dupliquer",
+          "description": "Dupliquer la ressource",
+          "dataType": "String",
+          "dataKey": "duplicate",
+          "uiComponent": "Button",
+          "configurations": {
+            "icon": "pi pi-copy"
+          }
+        },
+        {
+          "_id": "button-export",
+          "name": "Exporter",
+          "description": "Exporter les données",
+          "dataType": "String",
+          "dataKey": "export",
+          "uiComponent": "Button",
+          "configurations": {
+            "icon": "pi pi-download"
+          }
+        }
+      ]
+    }
+  ],
+  "toolbarData": {
+    "_id": "toolbar-users",
+    "name": "Utilisateurs",
+    "label": "Utilisateurs",
+    "description": "Gestion des utilisateurs du système",
+    "dataType": "Mixed",
+    "dataKey": "usersToolbar",
+    "uiComponent": "Toolbar",
+    "controls": {
+      "disabled": false,
+      "loading": false,
+      "showBack": true
+    },
+    "configurations": {
+      "icon": "pi pi-users",
+      "count": 5,
+      "selectedCount": 0
+    },
+    "buttonSource": "actionButtons"
+  },
+  "dataView": {
+    "_id": "data-view-users",
+    "name": "Utilisateurs",
+    "label": "Utilisateurs",
+    "description": "Liste des utilisateurs du système",
+    "dataType": "Array",
+    "dataKey": "users",
+    "uiComponent": "DataView",
+    "controls": {
+      "disabled": false,
+      "loading": false,
+      "selectable": true,
+      "multiple": false,
+      "paginator": true,
+      "lazy": false,
+      "stripedRows": true,
+      "showGridlines": false,
+      "resizable": true,
+      "reorderable": false
+    },
+    "configurations": {
+      "viewMode": "Grid",
+      "trackBy": "_id",
+      "pageSize": 10,
+      "pageIndex": 0,
+      "totalRecords": 5,
+      "rowsPerPageOptions": [
+        10,
+        25,
+        50,
+        100
+      ]
+    },
+    "columns": [
+      {
+        "_id": "column-name",
+        "name": "Nom",
+        "label": "Nom",
+        "description": "Nom complet",
+        "dataType": "String",
+        "dataKey": "name",
+        "controls": {
+          "hidden": false,
+          "sortable": true
+        },
+        "configurations": {
+          "icon": "pi pi-user"
+        }
+      },
+      {
+        "_id": "column-email",
+        "name": "Email",
+        "label": "Email",
+        "description": "Adresse email",
+        "dataType": "String",
+        "dataKey": "email",
+        "controls": {
+          "hidden": false,
+          "sortable": true
+        },
+        "configurations": {
+          "icon": "pi pi-envelope"
+        }
+      },
+      {
+        "_id": "column-status",
+        "name": "Statut",
+        "label": "Statut",
+        "description": "Statut utilisateur",
+        "dataType": "String",
+        "dataKey": "status",
+        "controls": {
+          "hidden": false,
+          "sortable": true
+        }
+      },
+      {
+        "_id": "column-city",
+        "name": "Ville",
+        "label": "Ville",
+        "description": "Ville de résidence",
+        "dataType": "String",
+        "dataKey": "address.city",
+        "controls": {
+          "hidden": false,
+          "sortable": false
+        },
+        "configurations": {
+          "icon": "pi pi-map-marker"
+        }
+      }
+    ],
+    "resources": [
+      {
+        "_id": "user-001",
+        "name": "Jean Kabungulu",
+        "email": "jean@peka.com",
+        "status": "Actif",
+        "address": {
+          "city": "Bukavu",
+          "country": "RDC"
+        }
+      },
+      {
+        "_id": "user-002",
+        "name": "Paul Mbuyi",
+        "email": "paul@peka.com",
+        "status": "Inactif",
+        "address": {
+          "city": "Goma",
+          "country": "RDC"
+        }
+      },
+      {
+        "_id": "user-003",
+        "name": "Grace Mwamba",
+        "email": "grace@peka.com",
+        "status": "Actif",
+        "address": {
+          "city": "Butembo",
+          "country": "RDC"
+        }
+      },
+      {
+        "_id": "user-004",
+        "name": "Daniel Kasongo",
+        "email": "daniel@peka.com",
+        "status": "Bloqué",
+        "address": {
+          "city": "Kinshasa",
+          "country": "RDC"
+        }
+      },
+      {
+        "_id": "user-005",
+        "name": "Sarah Bahati",
+        "email": "sarah@peka.com",
+        "status": "Actif",
+        "address": {
+          "city": "Bukavu",
+          "country": "RDC"
+        }
+      }
+    ],
+    "buttonSource": "actionButtons"
+  },
+  "sidebarData": [
+    {
+      "id": "dashboard",
+      "label": "Tableau de bord",
+      "description": "Vue générale du système",
+      "icon": "pi pi-home",
+      "accent": "blue"
+    },
+    {
+      "id": "management",
+      "label": "Gestion",
+      "description": "Gestion des ressources",
+      "icon": "pi pi-objects-column",
+      "accent": "cyan",
+      "children": [
+        {
+          "id": "users",
+          "label": "Utilisateurs",
+          "description": "Gestion des utilisateurs",
+          "icon": "pi pi-users",
+          "badge": 245,
+          "accent": "cyan"
+        },
+        {
+          "id": "organizations",
+          "label": "Organisations",
+          "description": "Gestion des organisations",
+          "icon": "pi pi-building",
+          "badge": 12,
+          "accent": "violet"
+        },
+        {
+          "id": "roles",
+          "label": "Rôles et permissions",
+          "description": "Gestion des autorisations",
+          "icon": "pi pi-shield",
+          "accent": "green"
+        }
+      ]
+    },
+    {
+      "id": "database",
+      "label": "Données",
+      "description": "Modèles et ressources",
+      "icon": "pi pi-database",
+      "accent": "violet",
+      "children": [
+        {
+          "id": "models",
+          "label": "Modèles",
+          "icon": "pi pi-box",
+          "badge": 8,
+          "accent": "violet"
+        },
+        {
+          "id": "keys",
+          "label": "Clés",
+          "icon": "pi pi-key",
+          "badge": 42,
+          "accent": "amber"
+        }
+      ]
+    },
+    {
+      "id": "devices",
+      "label": "Appareils",
+      "description": "Équipements connectés",
+      "icon": "pi pi-microchip",
+      "badge": 18,
+      "accent": "green"
+    },
+    {
+      "id": "reports",
+      "label": "Rapports",
+      "description": "Rapports et exports",
+      "icon": "pi pi-chart-bar",
+      "accent": "amber"
+    },
+    {
+      "id": "settings",
+      "label": "Paramètres",
+      "description": "Configuration du système",
+      "icon": "pi pi-cog",
+      "accent": "blue"
+    }
+  ],
+  "createUserModal": {
+    "_id": "create-user-modal",
+    "name": "Créer un utilisateur",
+    "label": "Nouvel utilisateur",
+    "description": "Renseignez les informations du nouvel utilisateur.",
+    "dataType": "Object",
+    "dataKey": "createUser",
+    "uiComponent": "Form",
+    "controls": {
+      "closable": true,
+      "closeOnEscape": true,
+      "dismissibleMask": false,
+      "lockWhileSubmitting": true,
+      "waitForServerResponse": true,
+      "closeOnSuccess": true,
+      "confirmPassword": true,
+      "showFeedback": true
+    },
+    "configurations": {
+      "presentationMode": "Modal",
+      "modalTitle": "Créer un utilisateur",
+      "modalWidth": "38rem"
+    },
+    "inputs": [
+      {
+        "_id": "create-user-name",
+        "name": "Nom",
+        "label": "Nom complet",
+        "description": "Nom complet de l’utilisateur",
+        "dataType": "String",
+        "dataKey": "name",
+        "uiComponent": "Input",
+        "inputGroup": "Simple",
+        "inputType": "Text",
+        "controls": {
+          "required": [
+            true,
+            "Le nom est obligatoire"
+          ],
+          "trim": true,
+          "autoFocus": true
+        },
+        "limits": {
+          "minLength": [
+            2,
+            "Minimum 2 caractères"
+          ],
+          "maxLength": [
+            120,
+            "Maximum 120 caractères"
+          ]
+        },
+        "configurations": {
+          "icon": "pi pi-user",
+          "placeholder": "Nom complet"
+        }
+      },
+      {
+        "_id": "create-user-email",
+        "name": "Email",
+        "label": "Adresse email",
+        "description": "Adresse email de connexion",
+        "dataType": "String",
+        "dataKey": "email",
+        "uiComponent": "Input",
+        "inputGroup": "Simple",
+        "inputType": "Text",
+        "controls": {
+          "required": [
+            true,
+            "L’adresse email est obligatoire"
+          ],
+          "trim": true,
+          "lowercase": true
+        },
+        "limits": {
+          "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+        },
+        "configurations": {
+          "icon": "pi pi-envelope",
+          "placeholder": "utilisateur@peka.com",
+          "autoComplete": "email"
+        }
+      },
+      {
+        "_id": "create-user-password",
+        "name": "Mot de passe",
+        "label": "Mot de passe",
+        "description": "Mot de passe initial de l’utilisateur",
+        "dataType": "String",
+        "dataKey": "password",
+        "uiComponent": "Input",
+        "inputGroup": "Simple",
+        "inputType": "Password",
+        "controls": {
+          "required": [
+            true,
+            "Le mot de passe est obligatoire"
+          ],
+          "feedback": true,
+          "toggleMask": true
+        },
+        "limits": {
+          "minLength": [
+            8,
+            "Minimum 8 caractères"
+          ],
+          "maxLength": [
+            120,
+            "Maximum 120 caractères"
+          ]
+        },
+        "configurations": {
+          "icon": "pi pi-lock",
+          "placeholder": "Mot de passe",
+          "autoComplete": "new-password"
+        }
+      }
+    ]
+  },
+  "currentProfile": {
+    "id": "current-user",
+    "name": "Jean Peka",
+    "subtitle": "Administrateur",
+    "imageUrl": "",
+    "status": "online"
+  },
+  "messages": [
+    {
+      "id": "message-1",
+      "sender": {
+        "id": "user-2",
+        "name": "Paul Mbuyi"
+      },
+      "content": "Bonjour, le rapport est disponible.",
+      "createdAt": "2026-10-09T11:00:00.000Z",
+      "read": false,
+      "mine": false
+    },
+    {
+      "id": "message-2",
+      "sender": {
+        "id": "current-user",
+        "name": "Jean Peka"
+      },
+      "content": "Merci, je vais le vérifier.",
+      "createdAt": "2026-10-09T11:05:00.000Z",
+      "read": true,
+      "mine": true
+    }
+  ],
+  "alerts": [
+    {
+      "id": "alert-1",
+      "title": "Sécurité",
+      "message": "Une nouvelle connexion a été détectée.",
+      "createdAt": "2026-10-09T11:10:00.000Z",
+      "icon": "pi pi-shield",
+      "severity": "warning",
+      "read": false
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notification-1",
+      "title": "Nouvel utilisateur",
+      "message": "Un nouvel utilisateur a été créé.",
+      "createdAt": "2026-10-09T11:15:00.000Z",
+      "icon": "pi pi-user-plus",
+      "severity": "success",
+      "read": false
+    },
+    {
+      "id": "notification-2",
+      "title": "Synchronisation",
+      "message": "Les données ont été synchronisées.",
+      "createdAt": "2026-10-09T11:20:00.000Z",
+      "icon": "pi pi-sync",
+      "severity": "info",
+      "read": false
+    }
+  ],
+  "information": [
+    {
+      "id": "information-1",
+      "title": "Peka Universal System",
+      "message": "Tous les services sont opérationnels.",
+      "createdAt": "2026-10-09T11:25:00.000Z",
+      "icon": "pi pi-check-circle"
+    }
+  ],
+  "initialState": {
+    "activeSidebarId": "users",
+    "createUserVisible": false,
+    "createUserRequestState": {
+      "status": "Idle"
+    },
+    "communicationVisible": false,
+    "communicationSending": false,
+    "communicationSection": "messages",
+    "detailsVisible": false,
+    "selectedDetails": null
+  }
+}
