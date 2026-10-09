@@ -1,0 +1,48 @@
+<div class="flex flex-column gap-1 w-full" (focusout)="blur()">
+  <label [for]="id" class="font-medium">{{ dataKey.name }}</label>
+
+  @switch (dataKey.inputType) {
+  @case (InputType.ToggleSwitch) {
+  <p-toggleswitch [inputId]="id" [formControl]="control" />
+  }
+
+  @case (InputType.TriStateCheckbox) {
+  <div class="flex flex-wrap gap-2" role="group" [attr.aria-label]="dataKey.name">
+    <p-button type="button" label="Indéterminé" icon="pi pi-minus" severity="secondary"
+      [outlined]="control.value !== null" (onClick)="setTriState(null)" />
+
+    <p-button type="button" label="Oui" icon="pi pi-check" severity="success" [outlined]="control.value !== true"
+      (onClick)="setTriState(true)" />
+
+    <p-button type="button" label="Non" icon="pi pi-times" severity="danger" [outlined]="control.value !== false"
+      (onClick)="setTriState(false)" />
+  </div>
+  }
+
+  @case (InputType.Slider) {
+  <div class="flex align-items-center gap-3">
+    <p-slider [formControl]="control" [min]="min" [max]="max" [step]="dataKey.limits?.step ?? 1" class="flex-1" />
+    <p-tag [value]="displayValue" />
+  </div>
+  }
+
+  @case (InputType.RangeSlider) {
+  <div class="flex flex-column gap-2">
+    <p-slider [formControl]="control" [min]="min" [max]="max" [step]="dataKey.limits?.step ?? 1" [range]="true" />
+    <small>{{ control.value?.[0] ?? min }} — {{ control.value?.[1] ?? max }}</small>
+  </div>
+  }
+
+  @case (InputType.Rating) {
+  <p-rating [formControl]="control" />
+  }
+  }
+
+  @if (dataKey.description) {
+  <small class="text-color-secondary">{{ dataKey.description }}</small>
+  }
+
+  @if (invalid) {
+  <p-message severity="error" size="small" variant="simple">{{ errorMessage }}</p-message>
+  }
+</div>

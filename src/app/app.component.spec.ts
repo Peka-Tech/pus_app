@@ -1,35 +1,46 @@
-import { TestBed } from '@angular/core/testing';
-import { RouterModule } from '@angular/router';
+import {
+  ComponentFixture,
+  TestBed
+} from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import {
+  provideHttpClient
+} from '@angular/common/http';
+import {
+  provideHttpClientTesting
+} from '@angular/common/http/testing';
+
 import { AppComponent } from './app.component';
+import { ServerService } from './global/service/server.service';
 
 describe('AppComponent', () => {
+  let component: AppComponent;
+  let fixture: ComponentFixture<AppComponent>;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        RouterModule.forRoot([])
-      ],
       declarations: [
         AppComponent
       ],
+      providers: [
+        ServerService,
+        provideHttpClient(),
+        provideHttpClientTesting()
+      ],
+      schemas: [
+        NO_ERRORS_SCHEMA
+      ]
     }).compileComponents();
+
+    fixture =
+      TestBed.createComponent(AppComponent);
+
+    component = fixture.componentInstance;
   });
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
-
-  it(`should have as title 'pus_app'`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.title).toEqual('pus_app');
-  });
-
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
+  it('crée l’application', () => {
     fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, pus_app');
+
+    expect(component).toBeTruthy();
   });
 });

@@ -1,0 +1,148 @@
+@if (isMobile && mobileOpen) {
+<button type="button" class="pus-sidebar-backdrop" aria-label="Fermer le menu" (click)="closeMobile()">
+</button>
+}
+
+<aside class="pus-sidebar" [class.pus-sidebar-collapsed]="
+    collapsed && !isMobile
+  " [class.pus-sidebar-mobile]="isMobile" [class.pus-sidebar-mobile-open]="
+    isMobile && mobileOpen
+  ">
+
+  <header class="pus-sidebar-header">
+    <div class="pus-sidebar-logo">
+      <i [class]="logoIcon" aria-hidden="true">
+      </i>
+    </div>
+
+    @if (!collapsed || isMobile) {
+    <div class="pus-sidebar-identity">
+      <strong>{{ title }}</strong>
+      <span>{{ subtitle }}</span>
+    </div>
+    }
+
+    <button type="button" class="pus-sidebar-toggle" [attr.aria-label]="
+        isMobile
+          ? 'Fermer le menu'
+          : collapsed
+            ? 'Agrandir le menu'
+            : 'Réduire le menu'
+      " (click)="toggleCollapsed()">
+
+      <i [class]="
+          isMobile
+            ? 'pi pi-times'
+            : collapsed
+              ? 'pi pi-angle-right'
+              : 'pi pi-angle-left'
+        " aria-hidden="true">
+      </i>
+    </button>
+  </header>
+
+  <nav class="pus-sidebar-navigation" aria-label="Navigation principale">
+
+    <ng-container *ngTemplateOutlet="
+        sidebarMenu;
+        context: {
+          $implicit: items,
+          level: 0
+        }
+      ">
+    </ng-container>
+  </nav>
+
+  <footer class="pus-sidebar-footer">
+    <div class="pus-sidebar-status">
+      <span class="pus-status-dot"></span>
+
+      @if (!collapsed || isMobile) {
+      <div>
+        <strong>Système actif</strong>
+        <span>Services opérationnels</span>
+      </div>
+      }
+    </div>
+  </footer>
+</aside>
+
+<ng-template #sidebarMenu let-menuItems let-level="level">
+
+  <ul class="pus-sidebar-list">
+    @for (
+    item of visibleItems(menuItems);
+    track item.id
+    ) {
+    <li class="pus-sidebar-list-item" [class.pus-has-children]="
+          hasChildren(item)
+        ">
+
+      <button type="button" class="pus-sidebar-item" [class]="getAccentClass(item)" [class.pus-active]="isActive(item)"
+        [class.pus-disabled]="item.disabled" [disabled]="item.disabled" [title]="
+            collapsed && !isMobile
+              ? item.label
+              : item.description ?? item.label
+          " [style.padding-left.em]="
+            collapsed && !isMobile
+              ? null
+              : getItemPadding(level)
+          " [attr.aria-current]="
+            isActive(item) ? 'page' : null
+          " [attr.aria-expanded]="
+            hasChildren(item)
+              ? isExpanded(item)
+              : null
+          " (click)="onItemClick(item, $event)">
+
+        <span class="pus-sidebar-item-marker">
+        </span>
+
+        <i class="pus-sidebar-item-icon" [class]="item.icon ?? 'pi pi-circle'" aria-hidden="true">
+        </i>
+
+        @if (!collapsed || isMobile) {
+        <span class="pus-sidebar-item-label">
+          {{ item.label }}
+        </span>
+
+        @if (
+        item.badge !== undefined &&
+        item.badge !== null
+        ) {
+        <span class="pus-sidebar-badge">
+          {{ item.badge }}
+        </span>
+        }
+
+        @if (hasChildren(item)) {
+        <i class="pus-sidebar-chevron" [class]="
+                  isExpanded(item)
+                    ? 'pi pi-angle-down'
+                    : 'pi pi-angle-right'
+                " aria-hidden="true">
+        </i>
+        }
+        }
+      </button>
+
+      @if (
+      hasChildren(item) &&
+      isExpanded(item) &&
+      (!collapsed || isMobile)
+      ) {
+      <div class="pus-sidebar-submenu">
+        <ng-container *ngTemplateOutlet="
+                sidebarMenu;
+                context: {
+                  $implicit: item.children,
+                  level: level + 1
+                }
+              ">
+        </ng-container>
+      </div>
+      }
+    </li>
+    }
+  </ul>
+</ng-template>

@@ -1,0 +1,68 @@
+<main style="background-color: #F3F2F2;" class="flex flex-column w-full h-full overflow-hidden border-round 
+justify-content-center gap-2 p-2 m-0 ">
+  <div class="flex flex-column justify-content-center align-items-center flex-shrink-0 h-auto">
+    @if (forms_datas && forms_datas.name) {
+    <h1
+      class="flex md:text-2xl text-xl md:w-10 w-12 p-0 m-0 text-justify text-primary justify-content-center align-content-center ">
+      {{forms_datas.name}}</h1> }
+    @if (forms_datas && forms_datas.description) {
+    <p class="flex md:text-sm text-xs md:w-7 w-10 p-0 m-0 text-center text-black-alpha-50 ">{{forms_datas.description}}
+    </p> }
+  </div>
+
+  <form   id="pus-dynamic-form"
+  [formGroup]="form" 
+  (ngSubmit)="submit()" 
+  class="pus-form-small overflow-auto flex flex-column gap-1 p-2 m-0">
+    <div class="grid gap-1  justify-content-center ">
+      @for (field of visibleFields; track field._id) {
+      <div class="bg-white  border-round p-1 w-11 md:w-5">
+
+        @switch (field.inputGroup) {
+          @case (InputGroup.Simple) {
+          <pus-inputs-simples [dataKey]="field" [control]="form.controls[field.dataKey]" [submitted]="submitted"
+            (inputChange)="onFieldChange($event)" (inputBlur)="onFieldBlur($event)">
+          </pus-inputs-simples>
+          }
+
+          @case (InputGroup.Selection) {
+          <pus-inputs-selections [dataKey]="field" [control]="form.controls[field.dataKey]" [submitted]="submitted"
+            (inputChange)="onFieldChange($event)" (inputBlur)="onFieldBlur($event)">
+          </pus-inputs-selections>
+          }
+
+          @case (InputGroup.Condition) {
+          <pus-inputs-conditions [dataKey]="field" [control]="form.controls[field.dataKey]" [submitted]="submitted"
+            (inputChange)="onFieldChange($event)" (inputBlur)="onFieldBlur($event)">
+          </pus-inputs-conditions>
+          }
+
+          @case (InputGroup.Media) {
+          <pus-inputs-media [dataKey]="field" [control]="form.controls[field.dataKey]" [submitted]="submitted"
+            (inputChange)="onFieldChange($event)" (inputBlur)="onFieldBlur($event)">
+          </pus-inputs-media>
+          }
+        }
+
+
+
+      </div>
+      }
+    </div>
+  </form>
+  <div class="flex justify-content-end gap-1">
+    @if (showReset) {
+    <p-button type="button" severity="secondary" 
+    [outlined]="true" icon="pi pi-refresh" [label]="resetLabel"
+      (onClick)="reset()" />
+    }
+
+    <p-button
+  type="button"
+  icon="pi pi-check"
+  [label]="submitLabel"
+  (onClick)="submit()">
+</p-button>
+
+  </div>
+</main>

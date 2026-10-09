@@ -1,0 +1,68 @@
+@if (renderedButtons.length > 0) {
+@if (useGroupMode) {
+<div class="button-container options-mode">
+  <p-tieredMenu #optionsMenu [model]="groupedItems" [popup]="true" appendTo="body">
+    <ng-template #item let-item>
+      <a class="p-tieredmenu-item-link" (click)="onMenuItemClick(item, $event)">
+        @if (item.icon) {
+        <span class="p-tieredmenu-item-icon" [class]="item.icon">
+        </span>
+        }
+        <span class="p-tieredmenu-item-label">
+          {{ item.label }}
+        </span>
+        @if (item.items?.length) {
+        <span class="pi pi-angle-right menu-arrow">
+        </span>
+        }
+      </a>
+    </ng-template>
+  </p-tieredMenu>
+  <p-button type="button" [label]="groupLabel" [ariaLabel]="groupLabel" [icon]="groupIcon" iconPos="right" size="small"
+    severity="secondary" [outlined]="true" [disabled]="groupDisabled" (onClick)="optionsMenu.toggle($event)">
+  </p-button>
+</div>
+} @else {
+<div class="button-container">
+  @for (
+  button of renderedButtons;
+  track button._id
+  ) {
+  @if (isMenu(button)) {
+  <p-tieredMenu #childMenu [model]="getMenuItems(button)" [popup]="true" appendTo="body">
+    <ng-template #item let-item>
+      <a class="p-tieredmenu-item-link" (click)="onMenuItemClick(item, $event)">
+        @if (item.icon) {
+        <span class="p-tieredmenu-item-icon" [class]="item.icon">
+        </span>
+        }
+        <span class="p-tieredmenu-item-label">
+          {{ item.label }}
+        </span>
+        @if (item.items?.length) {
+        <span class="pi pi-angle-right menu-arrow">
+        </span>
+        }
+      </a>
+    </ng-template>
+  </p-tieredMenu>
+  <p-button type="button" [label]="getLabel(button)" [ariaLabel]="getLabel(button)" [icon]="getIcon(button)"
+    iconPos="right" size="small" [disabled]="
+              isDisabled(button) ||
+              isLoading(button)
+            " [loading]="isLoading(button)" [severity]="getSeverity(button)" [outlined]="isOutlined(button)"
+    [text]="isText(button)" [raised]="isRaised(button)" [link]="isLink(button)" (onClick)="childMenu.toggle($event)">
+  </p-button>
+  } @else {
+  <p-button type="button" [label]="getLabel(button)" [ariaLabel]="getLabel(button)" [icon]="getIcon(button)"
+    size="small" [disabled]="
+              isDisabled(button) ||
+              isLoading(button)
+            " [loading]="isLoading(button)" [severity]="getSeverity(button)" [outlined]="isOutlined(button)"
+    [text]="isText(button)" [raised]="isRaised(button)" [link]="isLink(button)" (onClick)="onClick(button, $event)">
+  </p-button>
+  }
+  }
+</div>
+}
+}

@@ -1,0 +1,358 @@
+<div class="pus-data-view" [class.pus-data-view-locked]="locked" [attr.aria-busy]="loading">
+
+  @if (isTable) {
+  <p-table size="small" [value]="resources" [dataKey]="trackBy" [loading]="loading" [paginator]="paginator"
+    [rows]="pageSize" [first]="firstRecord" [totalRecords]="totalRecords" [rowsPerPageOptions]="rowsPerPageOptions"
+    [lazy]="lazy" [rowHover]="hoverable" [stripedRows]="stripedRows" [showGridlines]="showGridlines"
+    [resizableColumns]="resizableColumns" [reorderableColumns]="reorderableColumns" [selectionMode]="
+        selectable
+          ? multiple
+            ? 'multiple'
+            : 'single'
+          : null
+      " [selection]="
+  multiple
+    ? selection
+    : selection.length > 0
+      ? selection[0]
+      : null
+" (selectionChange)="
+        onTableSelectionChange($event)
+      " (onPage)="onPage($event)" (onSort)="onSort($event)">
+
+    <ng-template pTemplate="header">
+      <tr>
+        @if (selectable && multiple) {
+        <th class="pus-selection-column">
+          <p-tableHeaderCheckbox>
+          </p-tableHeaderCheckbox>
+        </th>
+        }
+
+        @for (
+        column of columns;
+        track column._id
+        ) {
+        <th [pSortableColumn]="
+                isSortable(column)
+                  ? column.dataKey
+                  : undefined
+              ">
+
+          <div class="pus-column-header">
+            @if (getColumnIcon(column)) {
+            <i [class]="getColumnIcon(column)" aria-hidden="true">
+            </i>
+            }
+
+            <span>
+              {{ getColumnLabel(column) }}
+            </span>
+
+            @if (isSortable(column)) {
+            <p-sortIcon [field]="column.dataKey">
+            </p-sortIcon>
+            }
+          </div>
+        </th>
+        }
+
+        @if (actionButtons.length > 0) {
+        <th class="pus-actions-column">
+          Actions
+        </th>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-resource>
+
+      <tr [pSelectableRow]="
+            selectable ? resource : undefined
+          " [class.pus-row-selected]="
+            isSelected(resource)
+          " (click)="
+            onRowClick(resource, $event)
+          " (dblclick)="
+            onRowDoubleClick(resource, $event)
+          ">
+
+        @if (selectable && multiple) {
+        <td class="pus-selection-column" (click)="$event.stopPropagation()">
+
+          <p-tableCheckbox [value]="resource">
+          </p-tableCheckbox>
+        </td>
+        }
+
+        @for (
+        column of columns;
+        track column._id
+        ) {
+        <td>
+          <span class="pus-cell-value" [title]="
+                  getCellValue(resource, column)
+                ">
+            {{
+            getCellValue(
+            resource,
+            column
+            )
+            }}
+          </span>
+        </td>
+        }
+
+        @if (actionButtons.length > 0) {
+        <td class="pus-actions-column" (click)="$event.stopPropagation()">
+
+          <pus-button [buttons]="actionButtons" [desktopLimit]="3" [mobileLimit]="1" groupLabel="Actions" (buttonClick)="
+                  onButtonClick(
+                    $event,
+                    resource
+                  )
+                ">
+          </pus-button>
+        </td>
+        }
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td class="pus-empty-cell" [attr.colspan]="
+              columns.length +
+              (actionButtons.length ? 1 : 0) +
+              (selectable && multiple ? 1 : 0)
+            ">
+
+          <div class="pus-empty">
+            <i class="pi pi-inbox" aria-hidden="true">
+            </i>
+
+            <span>
+              Aucune donnée disponible
+            </span>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+  }
+
+  @if (isList) {
+  <div class="pus-list" role="list">
+
+    @for (
+    resource of resources;
+    track trackResource(resource)
+    ) {
+    <div class="pus-list-item" role="listitem" tabindex="0" [class.pus-selected]="
+            isSelected(resource)
+          " [attr.aria-selected]="
+            isSelected(resource)
+          " (click)="
+            onRowClick(
+              resource,
+              $event,
+              true
+            )
+          " (keydown.enter)="
+            onRowClick(
+              resource,
+              $event,
+              true
+            )
+          " (dblclick)="
+            onRowDoubleClick(
+              resource,
+              $event
+            )
+          ">
+
+      @if (selectable) {
+      <div class="pus-list-selection" (click)="$event.stopPropagation()">
+
+        <p-checkbox [binary]="true" [ngModel]="
+                  isSelected(resource)
+                " (ngModelChange)="
+                  toggleSelection(resource)
+                ">
+        </p-checkbox>
+      </div>
+      }
+
+      <div class="pus-list-content">
+        @for (
+        column of columns;
+        track column._id
+        ) {
+        <div class="pus-list-field">
+          <div class="pus-field-label">
+            @if (
+            getColumnIcon(column)
+            ) {
+            <i [class]="
+                        getColumnIcon(column)
+                      " aria-hidden="true">
+            </i>
+            }
+
+            <span>
+              {{
+              getColumnLabel(column)
+              }}
+            </span>
+          </div>
+
+          <div class="pus-field-value" [title]="
+                    getCellValue(
+                      resource,
+                      column
+                    )
+                  ">
+            {{
+            getCellValue(
+            resource,
+            column
+            )
+            }}
+          </div>
+        </div>
+        }
+      </div>
+
+      @if (actionButtons.length > 0) {
+      <div class="pus-list-actions" (click)="$event.stopPropagation()">
+
+        <pus-button [buttons]="actionButtons" [desktopLimit]="3" [mobileLimit]="1" groupLabel="Actions" (buttonClick)="
+                  onButtonClick(
+                    $event,
+                    resource
+                  )
+                ">
+        </pus-button>
+      </div>
+      }
+    </div>
+    } @empty {
+    <div class="pus-empty">
+      <i class="pi pi-inbox" aria-hidden="true">
+      </i>
+
+      <span>
+        Aucune donnée disponible
+      </span>
+    </div>
+    }
+  </div>
+  }
+
+  @if (isGrid) {
+  <div class="pus-grid" role="list">
+
+    @for (
+    resource of resources;
+    track trackResource(resource)
+    ) {
+    <article class="pus-grid-card" role="listitem" tabindex="0" [class.pus-selected]="
+            isSelected(resource)
+          " [attr.aria-selected]="
+            isSelected(resource)
+          " (click)="
+            onRowClick(
+              resource,
+              $event,
+              true
+            )
+          " (keydown.enter)="
+            onRowClick(
+              resource,
+              $event,
+              true
+            )
+          " (dblclick)="
+            onRowDoubleClick(
+              resource,
+              $event
+            )
+          ">
+
+      @if (selectable) {
+      <div class="pus-grid-selection" (click)="$event.stopPropagation()">
+
+        <p-checkbox [binary]="true" [ngModel]="
+                  isSelected(resource)
+                " (ngModelChange)="
+                  toggleSelection(resource)
+                ">
+        </p-checkbox>
+      </div>
+      }
+
+      <div class="pus-grid-content">
+        @for (
+        column of columns;
+        track column._id
+        ) {
+        <div class="pus-grid-field">
+          <div class="pus-field-label">
+            @if (
+            getColumnIcon(column)
+            ) {
+            <i [class]="
+                        getColumnIcon(column)
+                      " aria-hidden="true">
+            </i>
+            }
+
+            <span>
+              {{
+              getColumnLabel(column)
+              }}
+            </span>
+          </div>
+
+          <div class="pus-grid-value" [title]="
+                    getCellValue(
+                      resource,
+                      column
+                    )
+                  ">
+            {{
+            getCellValue(
+            resource,
+            column
+            )
+            }}
+          </div>
+        </div>
+        }
+      </div>
+
+      @if (actionButtons.length > 0) {
+      <div class="pus-grid-actions" (click)="$event.stopPropagation()">
+
+        <pus-button [buttons]="actionButtons" [desktopLimit]="2" [mobileLimit]="1" groupLabel="Actions" (buttonClick)="
+                  onButtonClick(
+                    $event,
+                    resource
+                  )
+                ">
+        </pus-button>
+      </div>
+      }
+    </article>
+    } @empty {
+    <div class="pus-empty">
+      <i class="pi pi-inbox" aria-hidden="true">
+      </i>
+
+      <span>
+        Aucune donnée disponible
+      </span>
+    </div>
+    }
+  </div>
+  }
+</div>

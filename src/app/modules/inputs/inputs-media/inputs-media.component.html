@@ -1,0 +1,185 @@
+<section
+  class="pus-media"
+  [class.pus-media-disabled]="disabled">
+
+  <div class="pus-media-heading">
+    <label
+      class="pus-media-label"
+      [for]="'media-' + dataKey._id">
+      {{ label }}
+
+      @if (required) {
+        <span aria-hidden="true">*</span>
+      }
+    </label>
+
+    @if (
+      dataKey.description
+    ) {
+      <small>
+        {{ dataKey.description }}
+      </small>
+    }
+  </div>
+
+  <label
+    class="pus-media-drop-zone"
+    [class.pus-media-drop-zone-error]="showError"
+    [class.pus-media-drop-zone-disabled]="disabled"
+    [for]="'media-' + dataKey._id">
+
+    <i
+      class="pi pi-cloud-upload"
+      aria-hidden="true">
+    </i>
+
+    <span>
+      {{
+        dataKey.configurations?.placeholder ??
+        'Choisir un fichier'
+      }}
+    </span>
+
+    <small>
+      Cliquez pour parcourir les fichiers
+    </small>
+  </label>
+
+  <input
+    class="pus-media-native-input"
+    [id]="'media-' + dataKey._id"
+    type="file"
+    [accept]="accept"
+    [multiple]="multiple"
+    [disabled]="disabled"
+    [attr.capture]="capture"
+    (change)="onFileSelection($event)"
+    (blur)="onBlur()"/>
+
+  @if (previews.length > 0) {
+    <div class="pus-media-previews">
+      @for (
+        preview of previews;
+        track preview.file.name +
+          preview.file.size +
+          preview.file.lastModified
+      ) {
+        <article class="pus-media-preview">
+          @if (
+            preview.image &&
+            dataKey.controls?.preview !== false
+          ) {
+            <img
+              [src]="preview.url"
+              [alt]="preview.file.name"/>
+          } @else {
+            <i
+              class="pi pi-file"
+              aria-hidden="true">
+            </i>
+          }
+
+          <div class="pus-media-preview-info">
+            <strong>
+              {{ preview.file.name }}
+            </strong>
+
+            <small>
+              {{
+                preview.file.size / 1024
+                  | number:'1.0-1'
+              }}
+              Ko
+            </small>
+          </div>
+
+          @if (
+            dataKey.controls?.allowRemove !== false
+          ) {
+            <button
+              type="button"
+              aria-label="Retirer le fichier"
+              [disabled]="disabled"
+              (click)="removeFile(preview.file)">
+              <i
+                class="pi pi-times"
+                aria-hidden="true">
+              </i>
+            </button>
+          }
+        </article>
+      }
+    </div>
+  }
+
+  @if (currentValue().existing.length > 0) {
+    <div class="pus-media-previews">
+      @for (
+        resource of currentValue().existing;
+        track resource.id ?? resource.url
+      ) {
+        <article class="pus-media-preview">
+          @if (
+            dataKey.inputType === 'Image' &&
+            dataKey.controls?.preview !== false
+          ) {
+            <img
+              [src]="resource.url"
+              [alt]="resource.name ?? label"/>
+          } @else {
+            <i
+              class="pi pi-file"
+              aria-hidden="true">
+            </i>
+          }
+
+          <div class="pus-media-preview-info">
+            <strong>
+              {{ resource.name ?? 'Média existant' }}
+            </strong>
+          </div>
+
+          @if (
+            dataKey.controls?.allowRemove !== false
+          ) {
+            <button
+              type="button"
+              aria-label="Supprimer le média"
+              [disabled]="disabled"
+              (click)="removeExisting(resource)">
+              <i
+                class="pi pi-trash"
+                aria-hidden="true">
+              </i>
+            </button>
+          }
+        </article>
+      }
+    </div>
+  }
+
+  @if (
+    dataKey.controls?.showClear !== false &&
+    (
+      previews.length > 0 ||
+      currentValue().existing.length > 0
+    )
+  ) {
+    <button
+      type="button"
+      class="pus-media-clear"
+      [disabled]="disabled"
+      (click)="clear()">
+      Tout retirer
+    </button>
+  }
+
+  @if (showError) {
+    <p-message
+      severity="error"
+      size="small"
+      variant="simple">
+      {{ errorMessage }}
+    </p-message>
+  }
+</section>

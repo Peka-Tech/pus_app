@@ -1,0 +1,168 @@
+
+
+<div class="flex flex-column gap-2 w-full" (focusout)="blur()">
+
+  <label [for]="id" class="font-medium">
+    {{dataKey.name}}
+  </label>
+
+  @switch(dataKey.inputType){
+
+    @case(InputType.Select){
+
+      <p-select
+        [inputId]="id"
+        [formControl]="control"
+        [options]="normalizedOptions"
+        optionLabel="label"
+        optionValue="value"
+        [placeholder]="config.placeholder"
+        [showClear]="controls.showClear??true"
+        [filter]="controls.filter??false"
+        styleClass="w-full">
+      </p-select>
+
+    }
+
+    @case(InputType.MultiSelect){
+
+      <p-multiselect
+        [inputId]="id"
+        [formControl]="control"
+        [options]="normalizedOptions"
+        optionLabel="label"
+        optionValue="value"
+        [placeholder]="config.placeholder"
+        [filter]="controls.filter??true"
+        [showClear]="controls.showClear??true" 
+        display="chip"
+        styleClass="w-full">
+      </p-multiselect>
+
+    }
+
+    @case(InputType.Radio){
+
+      <div class="flex flex-wrap gap-3">
+
+        @for(option of normalizedOptions;track option.key){
+
+          <div class="flex align-items-center gap-2">
+
+            <p-radiobutton
+              [inputId]="id+'-'+$index"
+              [formControl]="control"
+              [value]="option.value">
+            </p-radiobutton>
+
+            <label [for]="id+'-'+$index">
+              {{option.label}}
+            </label>
+
+          </div>
+
+        }
+
+      </div>
+
+    }
+
+    @case(InputType.Checkbox){
+
+      <div class="flex flex-wrap gap-3">
+
+        @for(option of normalizedOptions;track option.key){
+
+          <div class="flex align-items-center gap-2">
+
+            <p-checkbox
+              [inputId]="id+'-'+$index"
+              [formControl]="control"
+              [value]="option.value">
+            </p-checkbox>
+
+            <label [for]="id+'-'+$index">
+              {{option.label}}
+            </label>
+
+          </div>
+
+        }
+
+      </div>
+
+    }
+
+    @case(InputType.AutoComplete){
+
+      <p-autocomplete
+        [inputId]="id"
+        [formControl]="control"
+        [suggestions]="suggestions"
+        (completeMethod)="search($event)"
+        optionLabel="label"
+        [multiple]="controls.multiple??false"
+        [dropdown]="true"
+        [placeholder]="config.placeholder"
+        styleClass="w-full">
+      </p-autocomplete>
+
+    }
+
+    @case(InputType.CascadeSelect){
+
+      <p-cascadeselect
+        [inputId]="id"
+        [formControl]="control" 
+        optionLabel="label"
+        optionValue="value"
+        optionGroupLabel="label"
+        [optionGroupChildren]="['children']"
+        [placeholder]="config.placeholder"
+        styleClass="w-full">
+      </p-cascadeselect>
+
+    }
+
+    @case(InputType.TreeSelect){
+
+      <p-treeselect
+        [inputId]="id"
+        [formControl]="control"
+        [options]="treeOptions"
+        [selectionMode]="config.selectionMode??'single'"
+        [placeholder]="config.placeholder"
+        containerStyleClass="w-full">
+      </p-treeselect>
+
+    }
+
+    @case(InputType.Listbox){
+
+      <p-listbox
+        [formControl]="control"
+        [options]="normalizedOptions"
+        optionLabel="label"
+        optionValue="value"
+        [multiple]="controls.multiple??false"
+        [filter]="controls.filter??false"
+        styleClass="w-full">
+      </p-listbox>
+
+    }
+
+  }
+
+  @if(dataKey.description){
+    <small class="text-color-secondary">
+      {{dataKey.description}}
+    </small>
+  }
+
+  @if(invalid){
+    <p-message severity="error" size="small" variant="simple">
+      {{errorMessage}}
+    </p-message>
+  }
+
+</div>

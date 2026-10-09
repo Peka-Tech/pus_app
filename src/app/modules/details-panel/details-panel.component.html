@@ -1,0 +1,108 @@
+<p-drawer
+  position="right"
+  styleClass="pus-details-drawer"
+  [visible]="visible"
+  [modal]="true"
+  [blockScroll]="true"
+  (visibleChange)="onVisibleChange($event)">
+
+  <section class="pus-details">
+    <header class="pus-details-header">
+      <div class="pus-details-identity">
+        <div class="pus-details-avatar">
+          @if (imageUrl) {
+            <img
+              [src]="imageUrl"
+              [alt]="title"/>
+          } @else {
+            <i
+              class="pi pi-user"
+              aria-hidden="true">
+            </i>
+          }
+        </div>
+
+        <div>
+          <strong>{{ title }}</strong>
+
+          @if (subtitle) {
+            <span>{{ subtitle }}</span>
+          }
+        </div>
+      </div>
+
+      <button
+        type="button"
+        aria-label="Fermer"
+        (click)="close()">
+        <i
+          class="pi pi-times"
+          aria-hidden="true">
+        </i>
+      </button>
+    </header>
+
+    <div class="pus-details-content">
+      @if (data) {
+        <dl class="pus-details-list">
+          @for (
+            field of fields;
+            track field.key
+          ) {
+            <div class="pus-details-field">
+              <dt>
+                @if (field.icon) {
+                  <i
+                    [class]="field.icon"
+                    aria-hidden="true">
+                  </i>
+                }
+
+                {{ field.label }}
+              </dt>
+
+              <dd>
+                {{ displayValue(field.value) }}
+              </dd>
+            </div>
+          }
+        </dl>
+      } @else {
+        <div class="pus-details-empty">
+          <i
+            class="pi pi-info-circle"
+            aria-hidden="true">
+          </i>
+          <strong>Aucune donnée</strong>
+        </div>
+      }
+    </div>
+
+    @if (data && (editable || deletable)) {
+      <footer class="pus-details-actions">
+        @if (deletable) {
+          <p-button
+            type="button"
+            label="Supprimer"
+            icon="pi pi-trash"
+            severity="danger"
+            size="small"
+            [outlined]="true"
+            (onClick)="remove()">
+          </p-button>
+        }
+
+        @if (editable) {
+          <p-button
+            type="button"
+            label="Modifier"
+            icon="pi pi-pencil"
+            severity="primary"
+            size="small"
+            (onClick)="edit()">
+          </p-button>
+        }
+      </footer>
+    }
+  </section>
+</p-drawer>

@@ -1,0 +1,302 @@
+<p-drawer
+  position="right"
+  styleClass="pus-communication-drawer"
+  [visible]="visible"
+  [modal]="true"
+  [blockScroll]="true"
+  (visibleChange)="onVisibleChange($event)">
+
+  <section class="pus-communication">
+    <header class="pus-communication-header">
+      <div>
+        <strong>Communications</strong>
+        <span>
+          Messages, notifications et informations
+        </span>
+      </div>
+
+      <button
+        type="button"
+        aria-label="Fermer"
+        (click)="close()">
+        <i
+          class="pi pi-times"
+          aria-hidden="true">
+        </i>
+      </button>
+    </header>
+
+    <nav
+      class="pus-communication-tabs"
+      aria-label="Sections de communication">
+
+      <button
+        type="button"
+        [class.pus-active]="
+          activeSection === 'messages'
+        "
+        (click)="setSection('messages')">
+
+        <i
+          class="pi pi-comments"
+          aria-hidden="true">
+        </i>
+
+        <span>Messages</span>
+
+        @if (unreadMessages > 0) {
+          <small>{{ unreadMessages }}</small>
+        }
+      </button>
+
+      <button
+        type="button"
+        [class.pus-active]="
+          activeSection === 'notifications'
+        "
+        (click)="setSection('notifications')">
+
+        <i
+          class="pi pi-bell"
+          aria-hidden="true">
+        </i>
+
+        <span>Alertes</span>
+
+        @if (unreadNotifications > 0) {
+          <small>
+            {{ unreadNotifications }}
+          </small>
+        }
+      </button>
+
+      <button
+        type="button"
+        [class.pus-active]="
+          activeSection === 'information'
+        "
+        (click)="setSection('information')">
+
+        <i
+          class="pi pi-info-circle"
+          aria-hidden="true">
+        </i>
+
+        <span>Infos</span>
+      </button>
+    </nav>
+
+    <div class="pus-communication-content">
+      @switch (activeSection) {
+        @case ('messages') {
+          <div class="pus-messages">
+            @for (
+              message of messages;
+              track message.id
+            ) {
+              <article
+                class="pus-message"
+                [class.pus-message-mine]="
+                  message.mine === true
+                ">
+
+                <div class="pus-message-avatar">
+                  @if (message.sender.imageUrl) {
+                    <img
+                      [src]="message.sender.imageUrl"
+                      [alt]="message.sender.name"/>
+                  } @else {
+                    <i
+                      class="pi pi-user"
+                      aria-hidden="true">
+                    </i>
+                  }
+                </div>
+
+                <div class="pus-message-body">
+                  <div class="pus-message-meta">
+                    <strong>
+                      {{ message.sender.name }}
+                    </strong>
+
+                    <time>
+                      {{
+                        message.createdAt
+                          | date:'short'
+                      }}
+                    </time>
+                  </div>
+
+                  <p>{{ message.content }}</p>
+                </div>
+              </article>
+            } @empty {
+              <div class="pus-empty">
+                <i
+                  class="pi pi-comments"
+                  aria-hidden="true">
+                </i>
+                <strong>Aucun message</strong>
+                <span>
+                  Les nouveaux messages apparaîtront ici.
+                </span>
+              </div>
+            }
+          </div>
+        }
+
+        @case ('notifications') {
+          <div class="pus-section-actions">
+            <span>
+              {{ unreadNotifications }}
+              non lue{{
+                unreadNotifications > 1 ? 's' : ''
+              }}
+            </span>
+
+            @if (unreadNotifications > 0) {
+              <button
+                type="button"
+                (click)="
+                  markAllNotificationsRead.emit()
+                ">
+                Tout marquer comme lu
+              </button>
+            }
+          </div>
+
+          <div class="pus-notifications">
+            @for (
+              notification of notifications;
+              track notification.id
+            ) {
+              <button
+                type="button"
+                class="pus-notification"
+                [class.pus-unread]="
+                  notification.read !== true
+                "
+                [attr.data-severity]="
+                  notification.severity ?? 'info'
+                "
+                (click)="
+                  openNotification(notification)
+                ">
+
+                <span class="pus-notification-icon">
+                  <i
+                    [class]="
+                      notification.icon ??
+                      'pi pi-bell'
+                    "
+                    aria-hidden="true">
+                  </i>
+                </span>
+
+                <span class="pus-notification-body">
+                  <strong>
+                    {{ notification.title }}
+                  </strong>
+
+                  <span>
+                    {{ notification.message }}
+                  </span>
+
+                  <time>
+                    {{
+                      notification.createdAt
+                        | date:'short'
+                    }}
+                  </time>
+                </span>
+              </button>
+            } @empty {
+              <div class="pus-empty">
+                <i
+                  class="pi pi-bell-slash"
+                  aria-hidden="true">
+                </i>
+                <strong>Aucune notification</strong>
+              </div>
+            }
+          </div>
+        }
+
+        @case ('information') {
+          <div class="pus-information">
+            @for (
+              item of information;
+              track item.id
+            ) {
+              <article class="pus-info-card">
+                <i
+                  [class]="
+                    item.icon ??
+                    'pi pi-info-circle'
+                  "
+                  aria-hidden="true">
+                </i>
+
+                <div>
+                  <strong>{{ item.title }}</strong>
+                  <p>{{ item.message }}</p>
+
+                  @if (item.createdAt) {
+                    <time>
+                      {{
+                        item.createdAt
+                          | date:'short'
+                      }}
+                    </time>
+                  }
+                </div>
+              </article>
+            } @empty {
+              <div class="pus-empty">
+                <i
+                  class="pi pi-info-circle"
+                  aria-hidden="true">
+                </i>
+                <strong>
+                  Aucune information
+                </strong>
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+
+    @if (activeSection === 'messages') {
+      <footer class="pus-message-composer">
+        <textarea
+          pTextarea
+          rows="2"
+          placeholder="Écrire un message…"
+          aria-label="Nouveau message"
+          [disabled]="sending"
+          [(ngModel)]="draft"
+          (keydown)="onMessageKeydown($event)">
+        </textarea>
+
+        <button
+          type="button"
+          aria-label="Envoyer le message"
+          [disabled]="
+            sending || !draft.trim()
+          "
+          (click)="sendMessage()">
+
+          <i
+            [class]="
+              sending
+                ? 'pi pi-spin pi-spinner'
+                : 'pi pi-send'
+            "
+            aria-hidden="true">
+          </i>
+        </button>
+      </footer>
+    }
+  </section>
+</p-drawer>

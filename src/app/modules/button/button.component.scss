@@ -1,0 +1,48 @@
+:host {
+  display: block;
+}
+
+.button-container {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.options-mode {
+  justify-content: flex-end;
+}
+
+.menu-arrow {
+  margin-left: auto;
+}
+
+:host ::ng-deep .p-button {
+  white-space: nowrap;
+  font-size: 0.8rem;
+  padding: 0.3rem 0.6rem;
+}
+
+:host ::ng-deep .p-tieredmenu {
+  font-size: 0.85rem;
+}
+
+:host ::ng-deep .p-tieredmenu-item-link {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.5rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+@media (max-width: 900px) {
+  .button-container {
+    gap: 0.3rem;
+  }
+
+  .options-mode {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

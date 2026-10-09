@@ -1,0 +1,100 @@
+<div class="flex flex-column gap-1 w-full" (focusout)="blur()">
+  <label [for]="id" class="text-sm">{{ dataKey.name }}</label>
+
+  @switch (dataKey.inputType) {
+
+    @case (InputType.Text) {
+      <input
+        pInputText
+        [id]="id"
+        [formControl]="control"
+        pSize="large"
+        [placeholder]="config.placeholder ?? ''"
+        [readonly]="controls.readOnly ?? false"
+        [autofocus]="controls.autoFocus ?? false"
+        class="w-full">
+    }
+
+    @case (InputType.Textarea) {
+      <textarea
+        pTextarea
+        [id]="id"
+        [formControl]="control"
+        pSize="small"
+        [placeholder]="config.placeholder ?? ''"
+        [readonly]="controls.readOnly ?? false"
+        [rows]="config.rows ?? 4"
+        class="w-full">
+      </textarea>
+    }
+
+    @case (InputType.Number) {
+      <p-inputnumber
+        [inputId]="id"
+        [formControl]="control"
+        [placeholder]="config.placeholder"
+        [min]="min"
+        [max]="max"
+        [step]="dataKey.limits?.step ?? 1"
+        [prefix]="config.prefix ?? ''"
+        [suffix]="config.suffix ?? ''"
+        [minFractionDigits]="config.minFractionDigits"
+        [maxFractionDigits]="config.maxFractionDigits"
+        size="small"
+        styleClass="w-full"/>
+    }
+
+    @case (InputType.Password) {
+      <p-password
+        [inputId]="id"
+        [formControl]="control"
+        [placeholder]="config.placeholder"
+        [feedback]="controls.feedback ?? true"
+        [toggleMask]="controls.feedback ?? true"
+        styleClass="w-full"
+        inputStyleClass="w-full"
+        size="small"/>
+    }
+
+    @case (InputType.Mask) {
+      <p-inputmask
+        [id]="id"
+        [formControl]="control"
+        [mask]="config.mask ?? ''"
+        [placeholder]="config.placeholder ?? ''"
+        [readonly]="controls.readOnly ?? false"
+        styleClass="w-full"/>
+    }
+
+    @case (InputType.Date) {
+      <p-datepicker
+        [inputId]="id"
+        [formControl]="control"
+        [placeholder]="config.placeholder"
+        [dateFormat]="config.dateFormat ?? 'dd/mm/yy'"
+        [minDate]="minDate"
+        [maxDate]="maxDate"
+        [showIcon]="true"
+        [showClear]="controls.showClear ?? true"
+        [readonlyInput]="controls.readOnly ?? false"
+        styleClass="w-full"/>
+    }
+
+    @case (InputType.Color) {
+      <p-colorpicker
+        [inputId]="id"
+        [formControl]="control"
+        [inline]="controls.inline ?? false"/>
+    }
+  }
+
+  @if (dataKey.description) {
+    <small class="text-color-secondary">{{ dataKey.description }}</small>
+  }
+
+  @if (invalid) {
+    <p-message severity="error" size="small" variant="simple">
+      {{ errorMessage }}
+    </p-message>
+  }
+</div>

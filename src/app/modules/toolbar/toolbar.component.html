@@ -1,0 +1,227 @@
+<div class="pus-toolbar" [class.pus-toolbar-locked]="locked" [attr.aria-busy]="loading">
+
+  <div class="pus-toolbar-main">
+    <div class="pus-toolbar-start">
+      @if (showBack) {
+      <p-button type="button" icon="pi pi-arrow-left" ariaLabel="Retour" size="small" severity="secondary" [text]="true"
+        [rounded]="true" [disabled]="locked" (onClick)="onBack($event)">
+      </p-button>
+      }
+
+      @if (icon) {
+      <i class="pus-toolbar-icon" [ngClass]="icon" aria-hidden="true">
+      </i>
+      }
+
+      <div class="pus-toolbar-heading">
+        <div class="pus-toolbar-title-line">
+          <span class="pus-toolbar-title">
+            {{ title }}
+          </span>
+
+          @if (count !== undefined) {
+          <span class="pus-toolbar-count" [attr.aria-label]="
+                count + ' élément' +
+                (count > 1 ? 's' : '')
+              ">
+            {{ count }}
+          </span>
+          }
+
+          @if (selectedCount > 0) {
+          <span class="pus-toolbar-selection">
+            {{ selectedCount }}
+            sélectionné{{ selectedCount > 1 ? 's' : '' }}
+          </span>
+          }
+        </div>
+
+        @if (description) {
+        <div class="pus-toolbar-description">
+          {{ description }}
+        </div>
+        }
+      </div>
+    </div>
+
+    <div class="pus-toolbar-end">
+      @if (searchInput) {
+      <div class="pus-toolbar-search" [class.pus-toolbar-search-disabled]="
+            isDisabled(searchInput)
+          ">
+
+        <i [ngClass]="
+              searchInput.configurations?.icon ??
+              'pi pi-search'
+            " aria-hidden="true">
+        </i>
+
+        <input pInputText type="search" [value]="searchValue" [placeholder]="searchPlaceholder"
+          [attr.aria-label]="searchPlaceholder" [disabled]="isDisabled(searchInput)" (input)="onSearchInput($event)"
+          (keydown.enter)="onSearchSubmit()" />
+
+        @if (
+        searchValue &&
+        searchInput.controls?.showClear
+        ) {
+        <button type="button" class="pus-toolbar-clear" aria-label="Effacer la recherche"
+          [disabled]="isDisabled(searchInput)" (click)="clearSearch()">
+
+          <i class="pi pi-times" aria-hidden="true">
+          </i>
+        </button>
+        }
+      </div>
+      }
+
+      @if (views.length > 0) {
+      <div class="pus-toolbar-view" role="group" aria-label="Mode d’affichage">
+
+        @for (view of views; track view._id) {
+        <p-button type="button" [icon]="getViewIcon(view)" [ariaLabel]="getViewLabel(view)" [title]="getViewLabel(view)"
+          size="small" severity="secondary" [text]="selectedView?._id !== view._id"
+          [outlined]="selectedView?._id !== view._id" [disabled]="isDisabled(view)" (onClick)="setView(view)">
+        </p-button>
+        }
+      </div>
+      }
+
+      @if (loading) {
+      <i class="pi pi-spin pi-spinner pus-toolbar-loading" aria-hidden="true">
+      </i>
+
+      <span class="pus-visually-hidden">
+        Chargement en cours
+      </span>
+      }
+
+      @if (actionButtons.length > 0) {
+      <pus-button [buttons]="actionButtons" (buttonClick)="onButtonClick($event)">
+      </pus-button>
+      }
+
+
+
+
+      <div
+  class="pus-toolbar-communications"
+  role="group"
+  aria-label="Communications">
+
+  <button
+    type="button"
+    class="pus-toolbar-communication"
+    aria-label="Afficher les messages"
+    title="Messages"
+    [disabled]="locked"
+    (click)="openMessages()">
+
+    <i
+      class="pi pi-comments"
+      aria-hidden="true">
+    </i>
+
+    @if (unreadMessages > 0) {
+      <span>
+        {{
+          unreadMessages > 99
+            ? '99+'
+            : unreadMessages
+        }}
+      </span>
+    }
+  </button>
+
+  <button
+    type="button"
+    class="pus-toolbar-communication"
+    aria-label="Afficher les notifications"
+    title="Notifications"
+    [disabled]="locked"
+    (click)="openNotifications()">
+
+    <i
+      class="pi pi-bell"
+      aria-hidden="true">
+    </i>
+
+    @if (unreadNotifications > 0) {
+      <span>
+        {{
+          unreadNotifications > 99
+            ? '99+'
+            : unreadNotifications
+        }}
+      </span>
+    }
+  </button>
+</div>
+    </div>
+  </div>
+
+  @if (hasSecondaryRow) {
+  <div class="pus-toolbar-secondary">
+    @if (filters.length > 0) {
+    <div class="pus-toolbar-filters" role="group" aria-label="Filtres">
+
+      @for (
+      filter of filters;
+      track filter._id
+      ) {
+      <p-select appendTo="body" [options]="filter.resources ?? []" optionLabel="name" optionValue="value" [placeholder]="
+                filter.configurations?.placeholder ??
+                filter.label ??
+                filter.name
+              " [attr.aria-label]="
+                filter.label ??
+                filter.name
+              " [showClear]="
+                filter.controls?.showClear === true
+              " [filter]="
+                filter.controls?.filter === true
+              " [disabled]="isDisabled(filter)" [ngModel]="
+                filterValues[filter.dataKey]
+              " (ngModelChange)="
+                onFilterChange(filter, $event)
+              ">
+      </p-select>
+      }
+
+      @if (filters.length > 1) {
+      <p-button type="button" icon="pi pi-filter-slash" ariaLabel="Effacer tous les filtres"
+        title="Effacer tous les filtres" size="small" severity="secondary" [text]="true" [disabled]="locked"
+        (onClick)="clearFilters()">
+      </p-button>
+      }
+    </div>
+    }
+
+    @if (sorts.length > 0) {
+    <div class="pus-toolbar-sort" role="group" aria-label="Tri">
+
+      <i class="pi pi-sort-alt" aria-hidden="true">
+      </i>
+
+      <p-select appendTo="body" [options]="sorts" optionLabel="name" [ngModel]="selectedSort" placeholder="Trier par"
+        ariaLabel="Champ de tri" [disabled]="locked" (ngModelChange)="
+              onSortChange($event)
+            ">
+      </p-select>
+
+      <p-button type="button" [icon]="
+              sortDirection === SortDirection.Asc
+                ? 'pi pi-sort-amount-up-alt'
+                : 'pi pi-sort-amount-down'
+            " [ariaLabel]="
+              sortDirection === SortDirection.Asc
+                ? 'Tri croissant'
+                : 'Tri décroissant'
+            " size="small" severity="secondary" [outlined]="true" [disabled]="
+              locked || !selectedSort
+            " (onClick)="toggleSortDirection()">
+      </p-button>
+    </div>
+    }
+  </div>
+  }
+</div>

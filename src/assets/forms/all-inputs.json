@@ -1,0 +1,378 @@
+[
+  {
+    "_id": "text",
+    "name": "Nom complet",
+    "description": "Input texte obligatoire.",
+    "dataType": "String",
+    "dataKey": "fullName",
+    "default": "",
+    "inputGroup": "Simple",
+    "inputType": "Text",
+    "controls": { "required": [true, "Le nom complet est obligatoire."], "trim": true },
+    "limits": { "minLength": 3, "maxLength": 80 },
+    "configurations": { "placeholder": "Jean Dupont", "className": "col-12 md:col-6" }
+  },
+  {
+    "_id": "textarea",
+    "name": "Description",
+    "description": "Zone de texte multiligne.",
+    "dataType": "String",
+    "dataKey": "description",
+    "default": "",
+    "inputGroup": "Simple",
+    "inputType": "Textarea",
+    "limits": { "maxLength": 500 },
+    "configurations": { "placeholder": "Description...", "rows": 5, "className": "col-12" }
+  },
+  {
+    "_id": "number",
+    "name": "Montant",
+    "description": "Nombre décimal avec limites.",
+    "dataType": "Number",
+    "dataKey": "amount",
+    "default": 100,
+    "inputGroup": "Simple",
+    "inputType": "Number",
+    "controls": { "required": true },
+    "limits": { "min": 0, "max": 1000000, "step": 0.01 },
+    "configurations": {
+      "suffix": " EUR",
+      "minFractionDigits": 2,
+      "maxFractionDigits": 2,
+      "className": "col-12 md:col-6"
+    }
+  },
+  {
+    "_id": "password",
+    "name": "Mot de passe",
+    "description": "Mot de passe avec indicateur PrimeNG.",
+    "dataType": "String",
+    "dataKey": "password",
+    "default": "",
+    "inputGroup": "Simple",
+    "inputType": "Password",
+    "controls": { "required": true },
+    "limits": { "minLength": 8 },
+    "configurations": {
+      "placeholder": "Mot de passe",
+      "feedback": true,
+      "toggleMask": true,
+      "className": "col-12 md:col-6"
+    }
+  },
+  {
+    "_id": "mask",
+    "name": "Téléphone",
+    "description": "Numéro avec masque.",
+    "dataType": "String",
+    "dataKey": "phone",
+    "default": "",
+    "inputGroup": "Simple",
+    "inputType": "Mask",
+    "configurations": {
+      "mask": "+99 999 999 999",
+      "placeholder": "+33 600 000 000",
+      "className": "col-12 md:col-6"
+    }
+  },
+  {
+    "_id": "date",
+    "name": "Date de rendez-vous",
+    "description": "Sélecteur de date.",
+    "dataType": "Date",
+    "dataKey": "appointmentDate",
+    "default": "2026-10-06T00:00:00.000Z",
+    "inputGroup": "Simple",
+    "inputType": "Date",
+    "controls": { "required": true },
+    "limits": {
+      "min": ["2026-01-01", "Date minimale dépassée."],
+      "max": ["2030-12-31", "Date maximale dépassée."]
+    },
+    "configurations": {
+      "dateFormat": "dd/mm/yy",
+      "showClear": true,
+      "className": "col-12 md:col-6"
+    }
+  },
+  {
+    "_id": "color",
+    "name": "Couleur",
+    "description": "Sélecteur de couleur.",
+    "dataType": "String",
+    "dataKey": "color",
+    "default": "3B82F6",
+    "inputGroup": "Simple",
+    "inputType": "Color",
+    "configurations": { "className": "col-12 md:col-6" }
+  },
+  {
+    "_id": "select",
+    "name": "Pays",
+    "description": "Sélection simple.",
+    "dataType": "String",
+    "dataKey": "country",
+    "default": "FR",
+    "inputGroup": "Selection",
+    "inputType": "Select",
+    "controls": { "required": true },
+    "configurations": {
+      "placeholder": "Choisir un pays",
+      "filter": true,
+      "showClear": true,
+      "className": "col-12 md:col-6"
+    },
+    "resources": [{
+      "static": true,
+      "datas": [
+        { "label": "France", "value": "FR" },
+        { "label": "Belgique", "value": "BE" },
+        { "label": "RDC", "value": "CD" },
+        { "label": "Suisse", "value": "CH" }
+      ]
+    }]
+  },
+  {
+    "_id": "multiselect",
+    "name": "Langues",
+    "description": "Sélection multiple.",
+    "dataType": "ArrayString",
+    "dataKey": "languages",
+    "default": ["fr"],
+    "inputGroup": "Selection",
+    "inputType": "MultiSelect",
+    "limits": { "minItems": 1, "maxItems": 3 },
+    "configurations": {
+      "placeholder": "Choisir les langues",
+      "filter": true,
+      "className": "col-12 md:col-6"
+    },
+    "resources": [{
+      "static": true,
+      "datas": [
+        { "label": "Français", "value": "fr" },
+        { "label": "Anglais", "value": "en" },
+        { "label": "Swahili", "value": "sw" },
+        { "label": "Lingala", "value": "ln" }
+      ]
+    }]
+  },
+  {
+    "_id": "radio",
+    "name": "Civilité",
+    "description": "Groupe de boutons radio.",
+    "dataType": "String",
+    "dataKey": "title",
+    "default": "mr",
+    "inputGroup": "Selection",
+    "inputType": "Radio",
+    "resources": [{
+      "static": true,
+      "datas": [
+        { "label": "Monsieur", "value": "mr" },
+        { "label": "Madame", "value": "mrs" },
+        { "label": "Autre", "value": "other" }
+      ]
+    }]
+  },
+  {
+    "_id": "checkbox",
+    "name": "Services",
+    "description": "Groupe de cases à cocher.",
+    "dataType": "ArrayString",
+    "dataKey": "services",
+    "default": ["support"],
+    "inputGroup": "Selection",
+    "inputType": "Checkbox",
+    "resources": [{
+      "static": true,
+      "datas": [
+        { "label": "Support", "value": "support" },
+        { "label": "Installation", "value": "installation" },
+        { "label": "Formation", "value": "training" }
+      ]
+    }]
+  },
+  {
+    "_id": "autocomplete",
+    "name": "Ville",
+    "description": "Recherche avec suggestions.",
+    "dataType": "Mixed",
+    "dataKey": "city",
+    "default": null,
+    "inputGroup": "Selection",
+    "inputType": "AutoComplete",
+    "configurations": {
+      "placeholder": "Rechercher une ville",
+      "showClear": true,
+      "className": "col-12 md:col-6"
+    },
+    "resources": [{
+      "static": true,
+      "datas": [
+        { "label": "Paris", "value": "PAR" },
+        { "label": "Lyon", "value": "LYO" },
+        { "label": "Bruxelles", "value": "BRU" },
+        { "label": "Kinshasa", "value": "KIN" },
+        { "label": "Bukavu", "value": "BKV" }
+      ]
+    }]
+  },
+  {
+    "_id": "cascade",
+    "name": "Localisation",
+    "description": "Sélection hiérarchique en cascade.",
+    "dataType": "Mixed",
+    "dataKey": "location",
+    "default": null,
+    "inputGroup": "Selection",
+    "inputType": "CascadeSelect",
+    "configurations": {
+      "placeholder": "Choisir une localisation",
+      "className": "col-12 md:col-6"
+    },
+    "resources": [{
+      "static": true,
+      "datas": [
+        {
+          "label": "France",
+          "value": "FR",
+          "children": [
+            {
+              "label": "Île-de-France",
+              "value": "IDF",
+              "children": [
+                { "label": "Paris", "value": "PAR" },
+                { "label": "Versailles", "value": "VER" }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "RDC",
+          "value": "CD",
+          "children": [
+            {
+              "label": "Sud-Kivu",
+              "value": "SK",
+              "children": [
+                { "label": "Bukavu", "value": "BKV" },
+                { "label": "Uvira", "value": "UVR" }
+              ]
+            }
+          ]
+        }
+      ]
+    }]
+  },
+  {
+    "_id": "tree",
+    "name": "Organisation",
+    "description": "Sélection dans un arbre.",
+    "dataType": "Mixed",
+    "dataKey": "organization",
+    "default": null,
+    "inputGroup": "Selection",
+    "inputType": "TreeSelect",
+    "configurations": {
+      "placeholder": "Choisir une unité",
+      "selectionMode": "single",
+      "className": "col-12 md:col-6"
+    },
+    "resources": [{
+      "static": true,
+      "datas": [
+        {
+          "key": "direction",
+          "label": "Direction",
+          "value": "direction",
+          "children": [
+            { "key": "finance", "label": "Finance", "value": "finance" },
+            { "key": "technique", "label": "Technique", "value": "technique" }
+          ]
+        }
+      ]
+    }]
+  },
+  {
+    "_id": "listbox",
+    "name": "Priorité",
+    "description": "Liste visible.",
+    "dataType": "String",
+    "dataKey": "priority",
+    "default": "normal",
+    "inputGroup": "Selection",
+    "inputType": "Listbox",
+    "configurations": {
+      "filter": true,
+      "className": "col-12 md:col-6"
+    },
+    "resources": [{
+      "static": true,
+      "datas": [
+        { "label": "Faible", "value": "low" },
+        { "label": "Normale", "value": "normal" },
+        { "label": "Haute", "value": "high" },
+        { "label": "Critique", "value": "critical" }
+      ]
+    }]
+  },
+  {
+    "_id": "toggle",
+    "name": "Compte actif",
+    "description": "Valeur booléenne.",
+    "dataType": "Boolean",
+    "dataKey": "active",
+    "default": true,
+    "inputGroup": "Condition",
+    "inputType": "ToggleSwitch",
+    "configurations": { "className": "col-12 md:col-4" }
+  },
+  {
+    "_id": "tristate",
+    "name": "Validation",
+    "description": "Valeurs true, false ou null.",
+    "dataType": "Boolean",
+    "dataKey": "approval",
+    "default": null,
+    "inputGroup": "Condition",
+    "inputType": "TriStateCheckbox",
+    "configurations": { "className": "col-12 md:col-4" }
+  },
+  {
+    "_id": "slider",
+    "name": "Progression",
+    "description": "Curseur numérique.",
+    "dataType": "Number",
+    "dataKey": "progress",
+    "default": 50,
+    "inputGroup": "Condition",
+    "inputType": "Slider",
+    "limits": { "min": 0, "max": 100, "step": 5 },
+    "configurations": { "className": "col-12 md:col-6" }
+  },
+  {
+    "_id": "range",
+    "name": "Fourchette de prix",
+    "description": "Curseur avec deux valeurs.",
+    "dataType": "ArrayNumber",
+    "dataKey": "priceRange",
+    "default": [100, 800],
+    "inputGroup": "Condition",
+    "inputType": "RangeSlider",
+    "limits": { "min": 0, "max": 1000, "step": 10 },
+    "configurations": { "className": "col-12 md:col-6" }
+  },
+  {
+    "_id": "rating",
+    "name": "Évaluation",
+    "description": "Note PrimeNG.",
+    "dataType": "Number",
+    "dataKey": "rating",
+    "default": 3,
+    "inputGroup": "Condition",
+    "inputType": "Rating",
+    "controls": { "required": true },
+    "configurations": { "className": "col-12 md:col-6" }
+  }
+]

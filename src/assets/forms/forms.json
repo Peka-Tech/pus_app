@@ -1,0 +1,530 @@
+{
+    "_id": "form_create_user",
+    "name": "Form création utilisateur",
+    "description": "Formulaire complet de test permettant de valider tous les types d'inputs disponibles dans le moteur dynamique PUS.",
+    "dataType": "Object",
+    "dataKey": "userForm",
+    "default": {},
+    "inputs": [
+        {
+            "_id": "input_text",
+            "name": "Nom complet",
+            "description": "Nom complet de l'utilisateur",
+            "dataType": "String",
+            "dataKey": "fullName",
+            "default": "",
+            "inputGroup": "Simple",
+            "inputType": "Text",
+            "controls": {
+                "required": [
+                    true,
+                    "Le nom complet est obligatoire."
+                ],
+                "trim": true
+            },
+            "limits": {
+                "minLength": [
+                    3,
+                    "Minimum 3 caractères."
+                ],
+                "maxLength": [
+                    80,
+                    "Maximum 80 caractères."
+                ]
+            },
+            "configurations": {
+                "placeholder": "Jean-Pierre Kabungulu",
+                "className": "col-12 md:col-6"
+            }
+        },
+        {
+            "_id": "input_textarea",
+            "name": "Description",
+            "description": "Description détaillée",
+            "dataType": "String",
+            "dataKey": "description",
+            "default": "",
+            "inputGroup": "Simple",
+            "inputType": "Textarea",
+            "controls": {
+                "trim": true
+            },
+            "limits": {
+                "maxLength": [
+                    500,
+                    "Maximum 500 caractères."
+                ]
+            },
+            "configurations": {
+                "placeholder": "Entrez une description...",
+                "rows": 5,
+                "className": "col-12"
+            }
+        },
+        {
+            "_id": "input_number",
+            "name": "Montant",
+            "description": "Montant de test",
+            "dataType": "Number",
+            "dataKey": "amount",
+            "default": 100,
+            "inputGroup": "Simple",
+            "inputType": "Number",
+            "controls": {
+                "required": true
+            },
+            "limits": {
+                "min": 0,
+                "max": 100000,
+                "step": 1
+            },
+            "configurations": {
+                "placeholder": "Montant",
+                "className": "col-12 md:col-6"
+            }
+        },
+        {
+            "_id": "input_password",
+            "name": "Mot de passe",
+            "description": "Mot de passe utilisateur",
+            "dataType": "String",
+            "dataKey": "password",
+            "default": "",
+            "inputGroup": "Simple",
+            "inputType": "Password",
+            "controls": {
+                "required": true
+            },
+            "limits": {
+                "minLength": 8,
+                "maxLength": 64
+            },
+            "configurations": {
+                "placeholder": "Mot de passe",
+                "feedback": true,
+                "toggleMask": true,
+                "className": "col-12 md:col-6"
+            }
+        },
+        {
+            "_id": "input_mask",
+            "name": "Téléphone",
+            "description": "Numéro de téléphone",
+            "dataType": "String",
+            "dataKey": "phone",
+            "default": "",
+            "inputGroup": "Simple",
+            "inputType": "Mask",
+            "configurations": {
+                "mask": "+999 999 999 999",
+                "placeholder": "+243 999 999 999",
+                "className": "col-12 md:col-6"
+            }
+        },
+        {
+            "_id": "input_date",
+            "name": "Date",
+            "description": "Date de test",
+            "dataType": "Date",
+            "dataKey": "date",
+            "default": null,
+            "inputGroup": "Simple",
+            "inputType": "Date",
+            "controls": {
+                "required": true
+            },
+            "configurations": {
+                "placeholder": "Sélectionner une date",
+                "dateFormat": "dd/mm/yy",
+                "className": "col-12 md:col-6"
+            }
+        },
+        {
+            "_id": "input_color",
+            "name": "Couleur",
+            "description": "Couleur principale",
+            "dataType": "String",
+            "dataKey": "color",
+            "default": "3B82F6",
+            "inputGroup": "Simple",
+            "inputType": "Color",
+            "configurations": {
+                "className": "col-12 md:col-6"
+            }
+        },
+        {
+            "_id": "input_select",
+            "name": "Pays",
+            "description": "Pays sélectionné",
+            "dataType": "String",
+            "dataKey": "country",
+            "default": "CD",
+            "inputGroup": "Selection",
+            "inputType": "Select",
+            "controls": {
+                "required": true
+            },
+            "resources": [
+                {
+                    "static": true,
+                    "datas": [
+                        {
+                            "label": "RDC",
+                            "value": "CD"
+                        },
+                        {
+                            "label": "Rwanda",
+                            "value": "RW"
+                        },
+                        {
+                            "label": "Burundi",
+                            "value": "BI"
+                        },
+                        {
+                            "label": "Kenya",
+                            "value": "KE"
+                        }
+                    ]
+                }
+            ],
+            "configurations": {
+                "placeholder": "Sélectionner un pays",
+                "filter": true,
+                "className": "col-12 md:col-6"
+            }
+        },
+        {
+            "_id": "input_multiselect",
+            "name": "Langues",
+            "description": "Langues parlées",
+            "dataType": "ArrayString",
+            "dataKey": "languages",
+            "default": [
+                "fr"
+            ],
+            "inputGroup": "Selection",
+            "inputType": "MultiSelect",
+            "resources": [
+                {
+                    "static": true,
+                    "datas": [
+                        {
+                            "label": "Français",
+                            "value": "fr"
+                        },
+                        {
+                            "label": "Anglais",
+                            "value": "en"
+                        },
+                        {
+                            "label": "Swahili",
+                            "value": "sw"
+                        },
+                        {
+                            "label": "Lingala",
+                            "value": "ln"
+                        }
+                    ]
+                }
+            ],
+            "configurations": {
+                "placeholder": "Sélectionner les langues",
+                "filter": true,
+                "className": "col-12 md:col-6"
+            }
+        },
+        {
+            "_id": "input_radio",
+            "name": "Civilité",
+            "description": "Civilité utilisateur",
+            "dataType": "String",
+            "dataKey": "title",
+            "default": "mr",
+            "inputGroup": "Selection",
+            "inputType": "Radio",
+            "resources": [
+                {
+                    "static": true,
+                    "datas": [
+                        {
+                            "label": "Monsieur",
+                            "value": "mr"
+                        },
+                        {
+                            "label": "Madame",
+                            "value": "mrs"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "_id": "input_checkbox",
+            "name": "Services",
+            "description": "Services sélectionnés",
+            "dataType": "ArrayString",
+            "dataKey": "services",
+            "default": [],
+            "inputGroup": "Selection",
+            "inputType": "Checkbox",
+            "resources": [
+                {
+                    "static": true,
+                    "datas": [
+                        {
+                            "label": "Automation",
+                            "value": "automation"
+                        },
+                        {
+                            "label": "Électricité",
+                            "value": "electrical"
+                        },
+                        {
+                            "label": "Électronique",
+                            "value": "electronics"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "_id": "input_autocomplete",
+            "name": "Ville",
+            "description": "Ville sélectionnée",
+            "dataType": "String",
+            "dataKey": "city",
+            "default": null,
+            "inputGroup": "Selection",
+            "inputType": "AutoComplete",
+            "resources": [
+                {
+                    "static": true,
+                    "datas": [
+                        {
+                            "label": "Bukavu",
+                            "value": "BKV"
+                        },
+                        {
+                            "label": "Goma",
+                            "value": "GOM"
+                        },
+                        {
+                            "label": "Kinshasa",
+                            "value": "KIN"
+                        },
+                        {
+                            "label": "Lubumbashi",
+                            "value": "FBM"
+                        }
+                    ]
+                }
+            ],
+            "configurations": {
+                "placeholder": "Rechercher une ville",
+                "className": "col-12 md:col-6"
+            }
+        },
+        {
+            "_id": "input_cascade",
+            "name": "Localisation",
+            "description": "Localisation hiérarchique",
+            "dataType": "String",
+            "dataKey": "location",
+            "default": null,
+            "inputGroup": "Selection",
+            "inputType": "CascadeSelect",
+            "resources": [
+                {
+                    "static": true,
+                    "datas": [
+                        {
+                            "label": "RDC",
+                            "value": "CD",
+                            "children": [
+                                {
+                                    "label": "Sud-Kivu",
+                                    "value": "SK",
+                                    "children": [
+                                        {
+                                            "label": "Bukavu",
+                                            "value": "BKV"
+                                        },
+                                        {
+                                            "label": "Uvira",
+                                            "value": "UVR"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "label": "Nord-Kivu",
+                                    "value": "NK",
+                                    "children": [
+                                        {
+                                            "label": "Goma",
+                                            "value": "GOM"
+                                        },
+                                        {
+                                            "label": "Butembo",
+                                            "value": "BTM"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "_id": "input_tree",
+            "name": "Département",
+            "description": "Département sélectionné",
+            "dataType": "String",
+            "dataKey": "department",
+            "default": null,
+            "inputGroup": "Selection",
+            "inputType": "TreeSelect",
+            "resources": [
+                {
+                    "static": true,
+                    "datas": [
+                        {
+                            "key": "engineering",
+                            "label": "Engineering",
+                            "value": "engineering",
+                            "children": [
+                                {
+                                    "key": "automation",
+                                    "label": "Automation",
+                                    "value": "automation"
+                                },
+                                {
+                                    "key": "electrical",
+                                    "label": "Electrical",
+                                    "value": "electrical"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "production",
+                            "label": "Production",
+                            "value": "production",
+                            "children": [
+                                {
+                                    "key": "pharma1",
+                                    "label": "Pharma I",
+                                    "value": "pharma1"
+                                },
+                                {
+                                    "key": "pharma2",
+                                    "label": "Pharma II",
+                                    "value": "pharma2"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "_id": "input_listbox",
+            "name": "Priorité",
+            "description": "Priorité sélectionnée",
+            "dataType": "String",
+            "dataKey": "priority",
+            "default": "normal",
+            "inputGroup": "Selection",
+            "inputType": "Listbox",
+            "resources": [
+                {
+                    "static": true,
+                    "datas": [
+                        {
+                            "label": "Faible",
+                            "value": "low"
+                        },
+                        {
+                            "label": "Normale",
+                            "value": "normal"
+                        },
+                        {
+                            "label": "Haute",
+                            "value": "high"
+                        },
+                        {
+                            "label": "Critique",
+                            "value": "critical"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "_id": "input_toggle",
+            "name": "Actif",
+            "description": "État actif/inactif",
+            "dataType": "Boolean",
+            "dataKey": "active",
+            "default": true,
+            "inputGroup": "Condition",
+            "inputType": "ToggleSwitch"
+        },
+        {
+            "_id": "input_tristate",
+            "name": "Validation",
+            "description": "Validation à trois états",
+            "dataType": "Boolean",
+            "dataKey": "approval",
+            "default": null,
+            "inputGroup": "Condition",
+            "inputType": "TriStateCheckbox"
+        },
+        {
+            "_id": "input_slider",
+            "name": "Progression",
+            "description": "Valeur de progression",
+            "dataType": "Number",
+            "dataKey": "progress",
+            "default": 50,
+            "inputGroup": "Condition",
+            "inputType": "Slider",
+            "limits": {
+                "min": 0,
+                "max": 100,
+                "step": 5
+            }
+        },
+        {
+            "_id": "input_range_slider",
+            "name": "Plage",
+            "description": "Plage de valeurs",
+            "dataType": "ArrayNumber",
+            "dataKey": "range",
+            "default": [
+                20,
+                80
+            ],
+            "inputGroup": "Condition",
+            "inputType": "RangeSlider",
+            "limits": {
+                "min": 0,
+                "max": 100,
+                "step": 5
+            }
+        },
+        {
+            "_id": "input_rating",
+            "name": "Évaluation",
+            "description": "Note utilisateur",
+            "dataType": "Number",
+            "dataKey": "rating",
+            "default": 3,
+            "inputGroup": "Condition",
+            "inputType": "Rating",
+            "limits": {
+                "min": 1,
+                "max": 5
+            }
+        }
+    ]
+}

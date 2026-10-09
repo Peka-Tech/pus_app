@@ -1,0 +1,107 @@
+<p-dialog appendTo="body" styleClass="pus-dynamic-modal" [visible]="visible" [modal]="true" [header]="title"
+    [style]="dialogStyle" [closable]="closable" [closeOnEscape]="closeOnEscape" [dismissableMask]="dismissibleMask"
+    [draggable]="false" [resizable]="false" [blockScroll]="true" [attr.aria-busy]="submitting" (visibleChange)="
+    onDialogVisibleChange($event)
+  ">
+
+    <section class="pus-modal">
+        @if (description) {
+        <p class="pus-modal-description">
+            {{ description }}
+        </p>
+        }
+
+        @if (showFeedback && feedback) {
+        <div class="pus-modal-feedback" role="alert" aria-live="polite">
+
+            <p-message [severity]="feedbackSeverity" size="small" variant="outlined">
+
+                <div class="pus-modal-feedback-content">
+                    @if (feedback.title) {
+                    <strong>
+                        {{ feedback.title }}
+                    </strong>
+                    }
+
+                    <span>
+                        {{ feedback.message }}
+                    </span>
+
+                    @if (feedback.code) {
+                    <small>
+                        Code : {{ feedback.code }}
+                    </small>
+                    }
+                </div>
+            </p-message>
+        </div>
+        }
+
+        <div class="pus-modal-content" [class.pus-modal-content-locked]="locked">
+
+            @if (isAutomaticForm) {
+            <pus-forms [forms_datas]="data" [dataKeys]="data.inputs ?? []" [initialValue]="initialValue" [title]="''"
+                [submitLabel]="'Valider'" [showReset]="false" (formSubmit)="onFormSubmit($event)">
+            </pus-forms>
+            } @else {
+            <ng-content></ng-content>
+            }
+        </div>
+
+        @if (requiresPassword) {
+        <section class="pus-modal-confirmation">
+            <div class="pus-modal-confirmation-heading">
+                <i class="pi pi-shield" aria-hidden="true">
+                </i>
+
+                <div>
+                    <strong>
+                        Confirmation de sécurité
+                    </strong>
+
+                    <small>
+                        Saisissez votre mot de passe pour confirmer
+                        cette opération.
+                    </small>
+                </div>
+            </div>
+
+
+            <p-password inputId="pus-modal-confirm-password" autocomplete="current-password" placeholder="Mot de passe"
+                [formControl]="confirmPasswordControl" [feedback]="false" [toggleMask]="true"
+                [invalid]="passwordInvalid" [fluid]="true">
+            </p-password>
+
+
+
+
+            @if (passwordInvalid) {
+            <p-message severity="error" size="small" variant="simple">
+                Le mot de passe de confirmation est obligatoire.
+            </p-message>
+            }
+        </section>
+        }
+
+        @if (locked) {
+        <div class="pus-modal-lock" role="status" aria-live="polite">
+
+            <i class="pi pi-spin pi-spinner" aria-hidden="true">
+            </i>
+
+            <span>
+                Traitement en cours. Cette fenêtre ne peut pas
+                encore être fermée.
+            </span>
+        </div>
+        }
+    </section>
+
+    <ng-template #footer>
+        <div class="pus-modal-footer">
+            <p-button type="button" label="Fermer" icon="pi pi-times" severity="secondary" size="small"
+                [outlined]="true" [disabled]="!closable" (onClick)="requestClose('button')">
+            </p-button>
+        </div>
+    </ng-template>
+</p-dialog>
