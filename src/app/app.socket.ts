@@ -1,5 +1,6 @@
 import {
-  Injectable
+  Injectable,
+  inject
 } from '@angular/core';
 import {
   BehaviorSubject,
@@ -9,143 +10,231 @@ import {
   io,
   Socket
 } from 'socket.io-client';
+import {
+  AuthService
+} from './global/service/auth.service';
 
-export type AppSocketResource =
+export type AppSocketResource=
   | 'messages'
   | 'alerts'
-  | 'notifications';
+  | 'notifications'
+  | 'realtime'
+  | 'conversations';
 
-export type AppSocketAction =
+export type AppSocketAction=
   | 'created'
   | 'updated'
   | 'deleted'
   | 'read'
-  | 'received';
+  | 'received'
+  | 'ready'
+  | 'join'
+  | 'leave';
 
-export type AppSocketEvent =
+export type AppSocketEvent=
   `${AppSocketResource}:${AppSocketAction}`;
 
 export interface AppSocketStatusI {
-  connected: boolean;
-  id?: string;
-  error?: string;
+  connected:boolean;
+  id?:string;
+  error?:string;
+}
+
+export interface AppSocketAcknowledgementI {
+  success:boolean;
+  message:string;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn:'root'
 })
 export class AppSocket {
-  private readonly socketUrl =
+  private readonly authService=
+    inject(AuthService);
+
+  private readonly socketUrl=
     'http://localhost:5000';
 
-  private socket: Socket | null = null;
+  private socket:Socket|null=null;
 
-  private readonly statusSubject =
+  private readonly statusSubject=
     new BehaviorSubject<AppSocketStatusI>({
-      connected: false
+      connected:false
     });
 
-  readonly status$ =
+  readonly status$=
     this.statusSubject.asObservable();
 
-  connect(): void {
-    if (this.socket?.connected) {
+  connect():void{
+    const token=this.authService.accessToken;
+
+    if(!token){
+      this.statusSubject.next({
+        connected:false,
+        error:'Access token indisponible'
+      });
       return;
     }
 
-    this.socket = io(
-      this.socketUrl,
-      {
-        transports: [
-          'websocket',
-          'polling'
-        ],
-        withCredentials: true,
-        autoConnect: true,
-        reconnection: true,
-        reconnectionAttempts: 10,
-        reconnectionDelay: 1000
-      }
-    );
+    if(this.socket?.connected){
+      return;
+    }
 
-    this.socket.on(
-      'connect',
-      () => {
-        this.statusSubject.next({
-          connected: true,
-          id: this.socket?.id
-        });
-      }
-    );
+    if(this.socket){
+      this.socket.auth={token};
+      this.socket.connect();
+      return;
+    }
 
-    this.socket.on(
-      'disconnect',
-      () => {
-        this.statusSubject.next({
-          connected: false
-        });
-      }
-    );
+    this.socket=io(this.socketUrl,{
+      auth:{token},
+      transports:[
+        'websocket',
+        'polling'
+      ],
+      withCredentials:true,
+      autoConnect:true,
+      reconnection:true,
+      reconnectionAttempts:10,
+      reconnectionDelay:1000
+    });
+
+    this.socket.on('connect',()=>{
+      this.statusSubject.next({
+        connected:true,
+        id:this.socket?.id
+      });
+    });
+
+    this.socket.on('disconnect',()=>{
+      this.statusSubject.next({
+        connected:false
+      });
+    });
 
     this.socket.on(
       'connect_error',
-      (error: Error) => {
+      (error:Error)=>{
         this.statusSubject.next({
-          connected: false,
-          error: error.message
+          connected:false,
+          error:error.message
         });
       }
     );
-  }
 
-  disconnect(): void {
-    this.socket?.removeAllListeners();
-    this.socket?.disconnect();
-    this.socket = null;
+    this.socket.io.on(
+      'reconnect_attempt',
+      ()=>{
+        const refreshedToken=
+          this.authService.accessToken;
 
-    this.statusSubject.next({
-      connected: false
-    });
-  }
-
-  emit<T>(
-    event: AppSocketEvent,
-    data: T
-  ): void {
-    this.ensureConnection();
-    this.socket?.emit(event, data);
-  }
-
-  listen<T>(
-    event: AppSocketEvent
-  ): Observable<T> {
-    return new Observable<T>(
-      subscriber => {
-        this.ensureConnection();
-
-        const listener = (
-          data: T
-        ): void => {
-          subscriber.next(data);
-        };
-
-        this.socket?.on(
-          event,
-          listener
-        );
-
-        return () => {
-          this.socket?.off(
-            event,
-            listener
-          );
-        };
+        if(
+          this.socket&&
+          refreshedToken
+        ){
+          this.socket.auth={
+            token:refreshedToken
+          };
+        }
       }
     );
   }
 
-  private ensureConnection(): void {
-    if (!this.socket) {
+  disconnect():void{
+    this.socket?.removeAllListeners();
+    this.socket?.disconnect();
+    this.socket=null;
+
+    this.statusSubject.next({
+      connected:false
+    });
+  }
+
+  joinConversation(
+    conversationId:string
+  ):Promise<AppSocketAcknowledgementI>{
+    return this.emitWithAcknowledgement(
+      'conversations:join',
+      conversationId
+    );
+  }
+
+  leaveConversation(
+    conversationId:string
+  ):Promise<AppSocketAcknowledgementI>{
+    return this.emitWithAcknowledgement(
+      'conversations:leave',
+      conversationId
+    );
+  }
+
+  emit<T>(
+    event:AppSocketEvent,
+    data:T
+  ):void{
+    this.ensureConnection();
+    this.socket?.emit(event,data);
+  }
+
+  listen<T>(
+    event:AppSocketEvent
+  ):Observable<T>{
+    return new Observable<T>(subscriber=>{
+      this.ensureConnection();
+
+      const listener=(data:T):void=>{
+        subscriber.next(data);
+      };
+
+      this.socket?.on(event,listener);
+
+      return ()=>{
+        this.socket?.off(event,listener);
+      };
+    });
+  }
+
+  private emitWithAcknowledgement(
+    event:'conversations:join'|
+      'conversations:leave',
+    conversationId:string
+  ):Promise<AppSocketAcknowledgementI>{
+    this.ensureConnection();
+
+    return new Promise(resolve=>{
+      if(!this.socket){
+        resolve({
+          success:false,
+          message:'Socket indisponible'
+        });
+        return;
+      }
+
+      this.socket.timeout(5000).emit(
+        event,
+        conversationId,
+        (
+          error:Error|null,
+          response:
+            AppSocketAcknowledgementI
+        )=>{
+          if(error){
+            resolve({
+              success:false,
+              message:
+                'Délai Socket.IO dépassé'
+            });
+            return;
+          }
+
+          resolve(response);
+        }
+      );
+    });
+  }
+
+  private ensureConnection():void{
+    if(!this.socket){
       this.connect();
     }
   }

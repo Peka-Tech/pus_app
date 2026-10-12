@@ -1787,11 +1787,7 @@ ngOnInit():void{
     }
 
     this.messages = result.current;
-
-    this.appSocket.emit(
-      'messages:created',
-      message
-    );
+ 
 
     this.communicationSending = false;
 
@@ -1829,11 +1825,7 @@ ngOnInit():void{
     if (result.success) {
       this.notifications =
         result.current;
-
-      this.appSocket.emit(
-        'notifications:read',
-        updated
-      );
+ 
 
       this.app_saveNotificationsF();
     }
@@ -1872,13 +1864,7 @@ ngOnInit():void{
         })
       );
 
-    this.appSocket.emit(
-      'notifications:read',
-      unread.map(
-        notification =>
-          notification.id
-      )
-    );
+ 
 
     this.app_saveNotificationsF();
 
