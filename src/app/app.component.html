@@ -1,59 +1,41 @@
 <p-toast position="top-right"></p-toast>
-
+@if (!authenticationReady) {
+<div class="pus-auth-loading">
+  <i class="pi pi-spin pi-spinner" aria-hidden="true">
+  </i>
+  <span>Vérification de la session…</span>
+</div>
+} @else if (!authenticated) {
+<pus-login></pus-login>
+} @else {
 <div class="pus-shell">
-  <pus-sidebar
-    #sidebar
-    class="pus-shell-sidebar"
-    title="Peka Universe"
-    subtitle="Universal System"
-    logoIcon="pi pi-sparkles"
-    [profile]="currentProfile"
-    [items]="sidebarData"
-    [activeId]="activeSidebarId"
-    (itemClick)="sidebar_itemClickE($event)"
-    (collapsedChange)="sidebar_collapsedChangeE($event)"
+  <pus-sidebar #sidebar class="pus-shell-sidebar" title="Peka Universe" subtitle="Universal System"
+    logoIcon="pi pi-sparkles" [profile]="currentProfile" [items]="sidebarData" [activeId]="activeSidebarId"
+    (itemClick)="sidebar_itemClickE($event)" (collapsedChange)="sidebar_collapsedChangeE($event)"
     (profileClick)="sidebar_profileClickE($event)">
   </pus-sidebar>
 
   <div class="pus-shell-main">
     <header class="pus-shell-header">
-      <button
-        type="button"
-        class="pus-mobile-menu"
-        aria-label="Ouvrir le menu"
+      <button type="button" class="pus-mobile-menu" aria-label="Ouvrir le menu"
         (click)="sidebar.toggleMobile(); app_mobileMenuClickE()">
-        <i
-          class="pi pi-bars"
-          aria-hidden="true">
+        <i class="pi pi-bars" aria-hidden="true">
         </i>
       </button>
 
-      <pus-toolbar
-        class="pus-shell-toolbar"
-        [data]="toolbarData"
-        [unreadMessages]="unreadMessages"
-        [unreadNotifications]="unreadNotifications"
-        (backClick)="toolbar_backClickE()"
-        (buttonClick)="toolbar_buttonClickE($event)"
-        (searchChange)="toolbar_searchChangeE($event)"
-        (searchSubmit)="toolbar_searchSubmitE($event)"
-        (filterChange)="toolbar_filterChangeE($event)"
-        (filtersChange)="toolbar_filtersChangeE($event)"
-        (sortChange)="toolbar_sortChangeE($event)"
-        (viewChange)="toolbar_viewChangeE($event)"
-        (communicationClick)="toolbar_communicationClickE($event)">
+      <pus-toolbar class="pus-shell-toolbar" [data]="toolbarData" [unreadMessages]="unreadMessages"
+        [unreadNotifications]="unreadNotifications" (backClick)="toolbar_backClickE()"
+        (buttonClick)="toolbar_buttonClickE($event)" (searchChange)="toolbar_searchChangeE($event)"
+        (searchSubmit)="toolbar_searchSubmitE($event)" (filterChange)="toolbar_filterChangeE($event)"
+        (filtersChange)="toolbar_filtersChangeE($event)" (sortChange)="toolbar_sortChangeE($event)"
+        (viewChange)="toolbar_viewChangeE($event)" (communicationClick)="toolbar_communicationClickE($event)">
       </pus-toolbar>
     </header>
 
     <main class="pus-shell-content">
-      <pus-data-view
-        class="pus-shell-data-view"
-        [data]="dataView"
-        (rowClick)="dataView_rowClickE($event)"
-        (rowDoubleClick)="dataView_rowDoubleClickE($event)"
-        (selectionChange)="dataView_selectionChangeE($event)"
-        (pageChange)="dataView_pageChangeE($event)"
-        (sortChange)="dataView_sortChangeE($event)"
+      <pus-data-view class="pus-shell-data-view" [data]="dataView" (rowClick)="dataView_rowClickE($event)"
+        (rowDoubleClick)="dataView_rowDoubleClickE($event)" (selectionChange)="dataView_selectionChangeE($event)"
+        (pageChange)="dataView_pageChangeE($event)" (sortChange)="dataView_sortChangeE($event)"
         (buttonClick)="dataView_buttonClickE($event)">
       </pus-data-view>
     </main>
@@ -63,47 +45,30 @@
     </footer>
   </div>
 
-  <pus-modal
-    [data]="createUserModal"
-    [visible]="createUserVisible"
-    [requestState]="createUserRequestState"
-    (visibleChange)="modal_visibleChangeE($event)"
-    (closeRequest)="modal_closeRequestE($event)"
+  <pus-modal [data]="createUserModal" [visible]="createUserVisible" [requestState]="createUserRequestState"
+    (visibleChange)="modal_visibleChangeE($event)" (closeRequest)="modal_closeRequestE($event)"
     (submitRequest)="modal_submitRequestE($event)">
   </pus-modal>
 
-  <pus-communication-center
-    [visible]="communicationVisible"
-    [activeSection]="communicationSection"
-    [messages]="messages"
-    [notifications]="notifications"
-    [information]="information"
-    [sending]="communicationSending"
+  <pus-communication-center [visible]="communicationVisible" [activeSection]="communicationSection"
+    [messages]="messages" [notifications]="notifications" [information]="information" [sending]="communicationSending"
     (visibleChange)="communication_visibleChangeE($event)"
     (activeSectionChange)="communication_activeSectionChangeE($event)"
-    (messageSend)="communication_messageSendE($event)"
-    (notificationClick)="communication_notificationClickE($event)"
+    (messageSend)="communication_messageSendE($event)" (notificationClick)="communication_notificationClickE($event)"
     (markAllNotificationsRead)="communication_markAllNotificationsReadE()">
   </pus-communication-center>
 
-  <pus-details-panel
-    [visible]="detailsVisible"
-    [data]="selectedDetails"
-    [title]="
+  <pus-details-panel [visible]="detailsVisible" [data]="selectedDetails" [title]="
       selectedDetails?.['name']
         ? '' + selectedDetails?.['name']
         : 'Détails'
-    "
-    [subtitle]="
+    " [subtitle]="
       selectedDetails?.['role']
         ? '' + selectedDetails?.['role']
         : ''
-    "
-    [imageUrl]="currentProfile.imageUrl"
-    [editable]="true"
-    [deletable]="false"
-    (visibleChange)="details_visibleChangeE($event)"
-    (editClick)="details_editClickE($event)"
+    " [imageUrl]="currentProfile.imageUrl" [editable]="true" [deletable]="false"
+    (visibleChange)="details_visibleChangeE($event)" (editClick)="details_editClickE($event)"
     (deleteClick)="details_deleteClickE($event)">
   </pus-details-panel>
 </div>
+}

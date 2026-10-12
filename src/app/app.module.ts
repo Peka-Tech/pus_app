@@ -4,8 +4,11 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { PrimerModule } from './primer.module';
-import { provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
+import { PrimerModule } from './primer.module'; 
+import {
+  provideHttpClient,
+  withInterceptors
+} from '@angular/common/http';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura'; 
 import { InputsConditionsComponent } from './modules/inputs/inputs-conditions/inputs-conditions.component';
@@ -25,11 +28,18 @@ import { CommonModule, registerLocaleData } from '@angular/common';
 import localeFr from '@angular/common/locales/fr';
 import { CommunicationCenterComponent } from './modules/communication-center/communication-center.component';
 import { DetailsPanelComponent } from './modules/details-panel/details-panel.component';
+import {
+  LoginComponent
+} from './modules/login/login.component';
+
+import {
+  authInterceptor
+} from './global/service/auth.interceptor';
 
 registerLocaleData(localeFr, 'fr-FR');
 
 @NgModule({
-  declarations: [AppComponent, InputsConditionsComponent, 
+  declarations: [AppComponent, InputsConditionsComponent, LoginComponent,
     InputsSelectionsComponent, InputsSimplesComponent, FormsComponent, 
     ListViewComponent, TooltipComponent, ToolbarComponent, ButtonComponent, 
     FooterComponent, ModalComponent, DataViewComponent, SidebarComponent, InputsMediaComponent, CommunicationCenterComponent, DetailsPanelComponent],
@@ -43,7 +53,11 @@ registerLocaleData(localeFr, 'fr-FR');
     PrimerModule,
   ],
   providers: [
-    provideHttpClient(withInterceptorsFromDi()),
+provideHttpClient(
+  withInterceptors([
+    authInterceptor
+  ])
+),
     providePrimeNG({
       theme: {
         preset: Aura,

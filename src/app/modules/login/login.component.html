@@ -1,0 +1,131 @@
+<section class="pus-login">
+  <div
+    class="pus-login__card"
+    aria-labelledby="pus-login-title">
+
+    <div class="pus-login__brand">
+      <span class="pus-login__logo">
+        <i
+          class="pi pi-sparkles"
+          aria-hidden="true">
+        </i>
+      </span>
+
+      <div>
+        <p class="pus-login__eyebrow">
+          PEKA UNIVERSAL SYSTEM
+        </p>
+
+        <h1 id="pus-login-title">
+          Connexion
+        </h1>
+
+        <p class="pus-login__subtitle">
+          Utilisez votre email ou votre keyAccess.
+        </p>
+      </div>
+    </div>
+
+    <form
+      class="pus-login__form"
+      [formGroup]="loginForm"
+      (ngSubmit)="login_submitE()">
+
+      <label for="pus-login-identifier">
+        Identifiant
+      </label>
+
+      <div class="pus-login__control">
+        <i
+          class="pi pi-user"
+          aria-hidden="true">
+        </i>
+
+        <input
+          id="pus-login-identifier"
+          type="text"
+          formControlName="login"
+          autocomplete="username"
+          placeholder="Email ou keyAccess">
+      </div>
+
+      @if (
+        loginForm.controls.login.touched &&
+        loginForm.controls.login.invalid
+      ) {
+        <small class="pus-login__error">
+          L’identifiant est obligatoire.
+        </small>
+      }
+
+      <label for="pus-login-password">
+        Mot de passe
+      </label>
+
+      <div class="pus-login__control">
+        <i
+          class="pi pi-lock"
+          aria-hidden="true">
+        </i>
+
+        <input
+          id="pus-login-password"
+          [type]="passwordVisible ? 'text' : 'password'"
+          formControlName="password"
+          autocomplete="current-password"
+          placeholder="Mot de passe">
+
+        <button
+          type="button"
+          class="pus-login__visibility"
+          [attr.aria-label]="
+            passwordVisible
+              ? 'Masquer le mot de passe'
+              : 'Afficher le mot de passe'
+          "
+          (click)="password_toggleE()">
+          <i
+            [class]="
+              passwordVisible
+                ? 'pi pi-eye-slash'
+                : 'pi pi-eye'
+            "
+            aria-hidden="true">
+          </i>
+        </button>
+      </div>
+
+      @if (
+        loginForm.controls.password.touched &&
+        loginForm.controls.password.invalid
+      ) {
+        <small class="pus-login__error">
+          Le mot de passe est obligatoire.
+        </small>
+      }
+
+      <button
+        type="submit"
+        class="pus-login__submit"
+        [disabled]="
+          loginForm.invalid ||
+          submitting
+        ">
+
+        @if (submitting) {
+          <i
+            class="pi pi-spin pi-spinner"
+            aria-hidden="true">
+          </i>
+          Connexion…
+        } @else {
+          <i
+            class="pi pi-sign-in"
+            aria-hidden="true">
+          </i>
+          Se connecter
+        }
+      </button>
+    </form>
+  </div>
+</section>

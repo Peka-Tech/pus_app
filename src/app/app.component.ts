@@ -16,7 +16,9 @@ import {
   Subject,
   takeUntil
 } from 'rxjs';
-
+import {
+  AuthService
+} from './global/service/auth.service';
 import {
   datasGlobalI
 } from './global/interface/data.interface';
@@ -110,9 +112,15 @@ const EMPTY_PROFILE: SidebarProfileI = {
     ChangeDetectionStrategy.OnPush
 })
 export class AppComponent
-implements OnInit, OnDestroy {
+  implements OnInit, OnDestroy {
   private readonly messageService =
     inject(MessageService);
+
+  private readonly authService =
+  inject(AuthService);
+
+authenticationReady=false;
+authenticated=false;
 
   private readonly changeDetector =
     inject(ChangeDetectorRef);
@@ -217,9 +225,39 @@ implements OnInit, OnDestroy {
    * CYCLE DE VIE
    * ========================================================== */
 
-  ngOnInit(): void {
-    void this.app_initializeF();
-  }
+ngOnInit():void{
+  this.authService.ready$
+    .pipe(
+      takeUntil(this.destroy$)
+    )
+    .subscribe(ready=>{
+      this.authenticationReady=ready;
+      this.changeDetector.markForCheck();
+    });
+
+  this.authService.authenticated$
+    .pipe(
+      takeUntil(this.destroy$)
+    )
+    .subscribe(authenticated=>{
+      const becameAuthenticated=
+        authenticated&&!this.authenticated;
+
+      this.authenticated=authenticated;
+
+      if(becameAuthenticated){
+        void this.app_initializeF();
+      }
+
+      this.changeDetector.markForCheck();
+    });
+
+  this.authService.bootstrap()
+    .pipe(
+      takeUntil(this.destroy$)
+    )
+    .subscribe();
+}
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -838,8 +876,8 @@ implements OnInit, OnDestroy {
     ) {
       const serverMessage =
         typeof error.error === 'object' &&
-        error.error !== null &&
-        'message' in error.error
+          error.error !== null &&
+          'message' in error.error
           ? String(error.error.message)
           : '';
 
@@ -1017,8 +1055,8 @@ implements OnInit, OnDestroy {
           ?.pageSize ?? 10,
       filters: search
         ? {
-            search
-          }
+          search
+        }
         : {}
     });
   }
@@ -1388,18 +1426,18 @@ implements OnInit, OnDestroy {
             return;
           }
 
- 
 
 
-            const result =
-  app_manipulateData<DataResource>(
-    ServerRequestActionEnum.Create,
-    this.dataView.resources ?? [],
-    created,
-    {
-      key: '_id'
-    }
-  );
+
+          const result =
+            app_manipulateData<DataResource>(
+              ServerRequestActionEnum.Create,
+              this.dataView.resources ?? [],
+              created,
+              {
+                key: '_id'
+              }
+            );
 
 
           if (!result.success) {
@@ -1506,7 +1544,7 @@ implements OnInit, OnDestroy {
       !visible &&
       this.createUserRequestState
         .status !==
-        UIRequestStatusEnum.Submitting
+      UIRequestStatusEnum.Submitting
     ) {
       this.createUserRequestState = {
         status: UIRequestStatusEnum.Idle
@@ -1581,15 +1619,15 @@ implements OnInit, OnDestroy {
             return;
           }
 
-const result =
-  app_manipulateData<DataResource>(
-    ServerRequestActionEnum.Create,
-    this.dataView.resources ?? [],
-    created,
-    {
-      key: '_id'
-    }
-  );
+          const result =
+            app_manipulateData<DataResource>(
+              ServerRequestActionEnum.Create,
+              this.dataView.resources ?? [],
+              created,
+              {
+                key: '_id'
+              }
+            );
 
           if (!result.success) {
             this.createUserRequestState = {
@@ -1712,18 +1750,18 @@ const result =
 
     const message:
       CommunicationMessageI = {
-        id: `message-${crypto.randomUUID()}`,
-        sender: {
-          id: this.currentProfile.id,
-          name: this.currentProfile.name,
-          imageUrl:
-            this.currentProfile.imageUrl
-        },
-        content,
-        createdAt: new Date(),
-        read: true,
-        mine: true
-      };
+      id: `message-${crypto.randomUUID()}`,
+      sender: {
+        id: this.currentProfile.id,
+        name: this.currentProfile.name,
+        imageUrl:
+          this.currentProfile.imageUrl
+      },
+      content,
+      createdAt: new Date(),
+      read: true,
+      mine: true
+    };
 
     const result =
       app_manipulateData(
@@ -1893,4 +1931,23 @@ const result =
 
     this.dataView_deleteSelectedHttpF();
   }
+
+
+  auth_logoutE():void{
+  this.authService.logout()
+    .pipe(
+      takeUntil(this.destroy$)
+    )
+    .subscribe(()=>{
+      this.appSocket.disconnect();
+
+      this.app_toastF(
+        'success',
+        'Déconnexion',
+        'Votre session est fermée.'
+      );
+
+      this.changeDetector.markForCheck();
+    });
+}
 }

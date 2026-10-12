@@ -1,0 +1,150 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+}
+
+.pus-login {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(
+      circle at 15% 10%,
+      rgba(59, 130, 246, .18),
+      transparent 32rem
+    ),
+    radial-gradient(
+      circle at 90% 85%,
+      rgba(139, 92, 246, .16),
+      transparent 30rem
+    ),
+    #f4f7fb;
+}
+
+.pus-login__card {
+  width: min(100%, 29rem);
+  padding: 2rem;
+  border: 1px solid rgba(148, 163, 184, .25);
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, .94);
+  box-shadow:
+    0 1.5rem 4rem rgba(15, 23, 42, .12);
+  backdrop-filter: blur(1rem);
+}
+
+.pus-login__brand {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.pus-login__logo {
+  flex: 0 0 auto;
+  width: 3rem;
+  height: 3rem;
+  display: grid;
+  place-items: center;
+  border-radius: 1rem;
+  color: #fff;
+  background:
+    linear-gradient(135deg, #2563eb, #7c3aed);
+  box-shadow:
+    0 .75rem 1.5rem rgba(37, 99, 235, .22);
+}
+
+.pus-login__eyebrow {
+  margin: 0 0 .35rem;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  color: #2563eb;
+}
+
+h1 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.75rem;
+}
+
+.pus-login__subtitle {
+  margin: .5rem 0 0;
+  color: #64748b;
+}
+
+.pus-login__form {
+  display: grid;
+  gap: .75rem;
+}
+
+label {
+  margin-top: .35rem;
+  font-size: .88rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.pus-login__control {
+  min-height: 3.15rem;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: 0 .9rem;
+  border: 1px solid #cbd5e1;
+  border-radius: .85rem;
+  background: #fff;
+
+  &:focus-within {
+    border-color: #2563eb;
+    box-shadow:
+      0 0 0 .2rem rgba(37, 99, 235, .12);
+  }
+
+  > i {
+    color: #64748b;
+  }
+
+  input {
+    min-width: 0;
+    flex: 1;
+    border: 0;
+    outline: 0;
+    font: inherit;
+    color: #0f172a;
+    background: transparent;
+  }
+}
+
+.pus-login__visibility {
+  border: 0;
+  padding: .4rem;
+  color: #64748b;
+  background: transparent;
+  cursor: pointer;
+}
+
+.pus-login__error {
+  color: #dc2626;
+}
+
+.pus-login__submit {
+  min-height: 3.15rem;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: .65rem;
+  margin-top: .75rem;
+  border: 0;
+  border-radius: .85rem;
+  color: #fff;
+  font-weight: 800;
+  background:
+    linear-gradient(135deg, #2563eb, #7c3aed);
+  cursor: pointer;
+
+  &:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+  }
+}
